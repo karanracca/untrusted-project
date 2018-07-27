@@ -1,6 +1,7 @@
 import CodeMirror from 'codemirror';
 
 export default function CodeEditor(textAreaDomID, width, height, game) {
+    
     var symbols = {
         'begin_line':'#BEGIN_EDITABLE#',
         'end_line':'#END_EDITABLE#',
@@ -441,7 +442,7 @@ export default function CodeEditor(textAreaDomID, width, height, game) {
 
     this.saveGoodState = function () {
         var lvlNum = game._currentFile ? game._currentFile : game._currentLevel;
-        localStorage.setItem(game._getLocalKey('level' + lvlNum + '.lastGoodState'), JSON.stringify({
+        localStorage.setItem('level' + lvlNum + '.lastGoodState', JSON.stringify({
             code: this.getCode(true),
             playerCode: this.getPlayerCode(),
             editableLines: editableLines,

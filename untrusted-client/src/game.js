@@ -5,19 +5,24 @@ import * as util from './util';
 import * as config from './config';
 import CodeEditor from './codeEditor';
 import RotDisplay from './rotDisplay';
+import ValidateCode from './validate';
 
 export default class Game {
 
-    constructor(startLevel) {
+    constructor(startLevel, domElement) {
         this.startLevel = startLevel;
+        this.display = null;
+        this.domElement = domElement;
         /* private properties */
-        this.__currentCode = '';
+        this._currentCode = '';
         this.__commands = [];
-        this.__playerCodeRunning = false;
-        this._dimensions = {
+        this._playerCodeRunning = false;
+        this.dimensions = {
             width: 50,
             height: 25
         };
+        this.editor = null;
+        this.map = null;
         this._mod = '';
         this._resetTimeout = null;
         this._currentLevel = 0;
@@ -30,12 +35,12 @@ export default class Game {
     }
 
     /* unexposed getters */
-    get _getHelpCommands () { return __commands; };
-    get _isPlayerCodeRunning () { return __playerCodeRunning; };
+    get getHelpCommands () { return __commands; };
+    get isPlayerCodeRunning () { return this._playerCodeRunning; };
     //get _getLocalKey (key) { return (this._mod.length == 0 ? '' : this._mod + '.') + key; };
 
     /* unexposed setters */
-    set _setPlayerCodeRunning (pcr) { __playerCodeRunning = pcr; };
+    set _setPlayerCodeRunning (pcr) { this._playerCodeRunning = pcr };
 
     /* unexposed methods */
     
@@ -60,25 +65,12 @@ export default class Game {
         // this.sound = new Sound('local');
         // this.sound = new Sound(debugMode ? 'local' : 'cloudfront');
 
-        // Initialize map display
-        // this.display = util.createDisplay(this, {
-        //     width: this._dimensions.width,
-        //     height: this._dimensions.height,
-        //     fontSize: 20
-        // });
-
         this.display = new RotDisplay({
-            width: this._dimensions.width,
-            height: this._dimensions.height,
+            width: this.dimensions.width,
+            height: this.dimensions.height,
             fontSize: 20
-        });
-        // this.rotDisplay.__createDisplay(this, {
-        //     width: this._dimensions.width,
-        //     height: this._dimensions.height,
-        //     fontSize: 20
-        // })
+        }, this);
 
-        //this.display.setupEventHandlers();
         //var display = this.rotDisplay.__getDisplay;
         // $('#screen').append(this.display.getContainer());
         // $('#drawingCanvas, #dummyDom, #dummyDom *').click(function () {
@@ -87,7 +79,7 @@ export default class Game {
 
         // Initialize editor, map, and objects
         this.editor = new CodeEditor("editor", 600, 500, this);
-        this.map = new GameMap(this.rotDisplay, this);
+        this.map = new GameMap(this.display, this);
         //this.objects = this.getListOfObjects();
 
         // Initialize validator
@@ -109,34 +101,254 @@ export default class Game {
         //     __commands = localStorage.getItem(this._getLocalKey('helpCommands')).split(';');
         // }
 
-        // Enable debug features
-        // if (debugMode) {
-        //     this._debugMode = true;
-        //     this._levelReached = 999; // make all levels accessible
-        //     __commands = Object.keys(this.reference); // display all help
-        //     this.sound.toggleSound(); // mute sound by default in debug mode
-        // }
-
         // Lights, camera, action
-        if (startLevel) {
-            this._currentLevel = startLevel - 1;
-            this._getLevel(startLevel, debugMode);
-        } else if (!debugMode && this._levelReached != 1) {
+        if (this.startLevel) {
+            this._currentLevel = this.startLevel - 1;
+            this._getLevel(this.startLevel);
+        } else if (this._levelReached != 1) {
             // load last level reached (unless it's the credits)
             this._getLevel(Math.min(this._levelReached, 21));
         } else {
-            this.rotDisplay.playIntro(this.map);
+            this.display.playIntro(this.dimensions.height);
+        }
+
+        //Set up event handler
+        document.getElementById(this.domElement).addEventListener('keydown', (e) => {
+            // directions for moving entities
+
+            if (this.display._intro == true) {
+                this.display._intro = false ;
+                this.start(); 
+            } else if (config.keys[e.keyCode] && this.map.player) {
+                this.map.player.move(config.keys[e.keyCode], true);
+            }
+            //e.preventDefault();
+        });
+    };
+
+    start (lvl) {
+        this.getLevel(lvl ? lvl : 1);
+    };
+
+    // makes an ajax request to get the level text file and then loads it into the game
+    getLevel (levelNum, isResetting, movingToNextLevel) {
+        let game = this;
+        let editor = this.editor;
+
+        if (levelNum > config.levelFileNames.length) return;
+
+        this._levelReached = Math.max(levelNum, this._levelReached);
+        
+        //Store level in local storage
+        localStorage.setItem('levelReached', this._levelReached);
+
+        let fileName = config.levelFileNames[levelNum - 1];
+        let lvlCode = config.levels['levels/' + fileName];
+
+        if (movingToNextLevel) {
+            // save level state and create a gist
+            editor.saveGoodState();
+            editor.createGist();
+        }
+
+        game._currentLevel = levelNum;
+        game._currentBonusLevel = null;
+        game._currentFile = null;
+
+        //TODO load level code in editor
+        game.editor.loadCode(lvlCode);
+
+        // restored saved state for this level?
+        // if (!isResetting && editor.getGoodState(levelNum)) {
+        //     // unless the current level is a newer version
+        //     var newVer = editor.getProperties().version;
+        //     var savedVer = editor.getGoodState(levelNum).version;
+        //     if (!(newVer && (!savedVer || isNewerVersion(newVer, savedVer)))) {
+        //         // restore saved line/section/endOfStartLevel state if possible
+        //         if (editor.getGoodState(levelNum).endOfStartLevel) {
+        //             editor.setEndOfStartLevel(editor.getGoodState(levelNum).endOfStartLevel);
+        //         }
+        //         if (editor.getGoodState(levelNum).editableLines) {
+        //             editor.setEditableLines(editor.getGoodState(levelNum).editableLines);
+        //         }
+        //         if (editor.getGoodState(levelNum).editableSections) {
+        //             editor.setEditableSections(editor.getGoodState(levelNum).editableSections);
+        //         }
+
+        //         // restore saved code
+        //         editor.setCode(editor.getGoodState(levelNum).code);
+        //     }
+        // }
+
+        // start the level and fade in
+        game.evalLevelCode(null, null, true);
+        //game.display.focus();
+
+        // store the commands introduced in this level (for api reference)
+        //__commands = __commands.concat(editor.getProperties().commandsIntroduced).unique();
+        //localStorage.setItem(this._getLocalKey('helpCommands'), __commands.join(';'));
+    };
+
+      evalLevelCode(allCode, playerCode, isNewLevel, restartingLevelFromScript) {
+        
+        let game = this;
+        
+        // by default, get code from the editor
+        let loadedFromEditor = false;
+        if (!allCode) {
+            allCode = game.editor.getCode();
+            playerCode = game.editor.getPlayerCode();
+            loadedFromEditor = true;
+        }
+
+        // if we're editing a script file, do something completely different
+        if (game._currentFile !== null && !restartingLevelFromScript) {
+            game.validateAndRunScript(allCode);
+            return;
+        }
+
+        //save current display state (for scrolling up later)
+        //this.display.saveGrid(this.map);
+
+        // validate the code if it passes validation, returns the startLevel function else returns false
+        let validatedStartLevel = ValidateCode(allCode, playerCode, restartingLevelFromScript, this);
+
+        if (validatedStartLevel) { // code is valid
+            // reset the map
+            this.map.reset(); // for cleanup
+            this.map = new GameMap(this.display, this);
+            this.map.reset();
+            this.map.setProperties(this.editor.getProperties()['mapProperties']);
+
+            // save editor state
+            this._currentCode = allCode;
+            if (loadedFromEditor && !restartingLevelFromScript) {
+                this.editor.saveGoodState();
+            }
+
+            // clear drawing canvas and hide it until level loads
+            // var screenCanvas = $('#screen canvas')[0];
+            // $('#drawingCanvas')[0].width = screenCanvas.width;
+            // $('#drawingCanvas')[0].height = screenCanvas.height;
+            // $('#drawingCanvas').hide();
+            // $('#dummyDom').hide();
+
+            // set correct inventory state
+            //this.setInventoryStateByLevel(this._currentLevel);
+
+            // start the level
+            validatedStartLevel(this.map);
+
+            //deal with sneaky players
+            //this.clearModifiedGlobals();
+
+            // draw the map
+            this.display.fadeIn(this.map, isNewLevel ? 100 : 10, () => {
+                
+                //this.map.refresh(); // refresh inventory display
+
+                // // show map overlays if necessary
+                // if (game.map._properties.showDrawingCanvas) {
+                //     $('#drawingCanvas').show();
+                // } else if (game.map._properties.showDummyDom) {
+                //     $('#dummyDom').show();
+                // }
+
+                // workaround because we can't use writeStatus() in startLevel()
+                // (due to the text getting overwritten by the fade-in)
+                if (this.editor.getProperties().startingMessage) {
+                    this.display.writeStatus(game.editor.getProperties().startingMessage);
+                }
+            });
+
+            this.map.ready();
+
+            // start bg music for this level
+            // if (this.editor.getProperties().music) {
+            //     this.sound.playTrackByName(this.editor.getProperties().music);
+            // }
+
+            // // activate super menu if 21_endOfTheLine has been reached
+            // if (this._levelReached >= 21) {
+            //     this.activateSuperMenu();
+            // }
+
+            //finally, allow player movement
+            if (this.map.player) {
+                this.map.player._canMove = true;
+                //game.display.focus();
+            }
+        } else { // code is invalid
+            // play error sound
+            this.sound.playSound('static');
+            // disable player movement
+            this.map.getPlayer()._canMove = false;
         }
     };
 
-    // this._intro = function () {
-    //     //this.display.focus();
-    //     // this.display.playIntro(this.map);
-    //     util.playIntro(this.display, this.map);
+    // setInventoryStateByLevel (levelNum) {
+    //     // first remove items that have onDrop effects on UI
+    //     if (levelNum == 1) {
+    //         this.removeFromInventory('computer');
+    //     }
+    //     if (levelNum <= 7) {
+    //         this.removeFromInventory('phone');
+    //     }
+    
+    //     // clear any remaining items from inventory
+    //     this.inventory = [];
+    
+    //     // repopulate inventory by level
+    //     if (levelNum > 1) {
+    //         this.addToInventory('computer');
+    //         $('#editorPane').fadeIn();
+    //         this.editor.refresh();
+    //     }
+    //     if (levelNum > 7) {
+    //         this.addToInventory('phone');
+    //         $('#phoneButton').show();
+    //     }
+    //     if (levelNum > 11) {
+    //         this.addToInventory('redKey');
+    //     }
+    //     if (levelNum > 12) {
+    //         this.addToInventory('greenKey');
+    //     }
+    //     if (levelNum > 13) {
+    //         this.addToInventory('blueKey');
+    //     }
+    //     if (levelNum > 14) {
+    //         this.addToInventory('theAlgorithm');
+    //         this.removeFromInventory('redKey');
+    //         this.removeFromInventory('greenKey');
+    //         this.removeFromInventory('blueKey');
+    //     }
+    //     if (levelNum > 15) {
+    //         this.removeFromInventory('theAlgorithm');
+    //     }
+    //     if (levelNum > 20) {
+    //         this.addToInventory('theAlgorithm');
+    //     }
+    
+    //     // clear any status messages generated by this
+    //     this.map._status = '';
     // };
 
-    // this._start = function (lvl) {
-    //     this._getLevel(lvl ? lvl : 1);
+    // removeFromInventory (itemName) {
+    //     var object = this.getItemDefinition(itemName);
+    //     if (!object) {
+    //         throw 'No such object: ' + itemName;
+    //     }
+    //     if (object.type != 'item') {
+    //         throw 'Object is not an item: ' + itemName;
+    //     }
+    
+    //     this.inventory.remove(itemName);
+    //     this.drawInventory();
+    
+    //     if (object.onDrop) {
+    //         object.onDrop(this);
+    //     }
     // };
 
     // this._moveToNextLevel = function () {
@@ -165,69 +377,6 @@ export default class Game {
     //     this._getLevel(levelNum, false, false);
     //     this.display.focus();
     //     this.sound.playSound('blip');
-    // };
-
-    // // makes an ajax request to get the level text file and
-    // // then loads it into the game
-    // this._getLevel = function (levelNum, isResetting, movingToNextLevel) {
-    //     var game = this;
-
-    //     let editor = this.editor;
-
-    //     if (levelNum > this._levelFileNames.length) {
-    //         return;
-    //     }
-
-    //     this._levelReached = Math.max(levelNum, this._levelReached);
-    //     if (!debugMode) {
-    //         localStorage.setItem(this._getLocalKey('levelReached'), this._levelReached);
-    //     }
-
-    //     var fileName = this._levelFileNames[levelNum - 1];
-
-    //     let lvlCode = util.levels['levels/' + fileName];
-    //     if (movingToNextLevel) {
-    //         // save level state and create a gist
-    //         editor.saveGoodState();
-    //         editor.createGist();
-    //     }
-
-    //     game._currentLevel = levelNum;
-    //     game._currentBonusLevel = null;
-    //     game._currentFile = null;
-
-    //     // load level code in editor
-    //     editor.loadCode(lvlCode);
-
-    //     // restored saved state for this level?
-    //     // if (!isResetting && editor.getGoodState(levelNum)) {
-    //     //     // unless the current level is a newer version
-    //     //     var newVer = editor.getProperties().version;
-    //     //     var savedVer = editor.getGoodState(levelNum).version;
-    //     //     if (!(newVer && (!savedVer || isNewerVersion(newVer, savedVer)))) {
-    //     //         // restore saved line/section/endOfStartLevel state if possible
-    //     //         if (editor.getGoodState(levelNum).endOfStartLevel) {
-    //     //             editor.setEndOfStartLevel(editor.getGoodState(levelNum).endOfStartLevel);
-    //     //         }
-    //     //         if (editor.getGoodState(levelNum).editableLines) {
-    //     //             editor.setEditableLines(editor.getGoodState(levelNum).editableLines);
-    //     //         }
-    //     //         if (editor.getGoodState(levelNum).editableSections) {
-    //     //             editor.setEditableSections(editor.getGoodState(levelNum).editableSections);
-    //     //         }
-
-    //     //         // restore saved code
-    //     //         editor.setCode(editor.getGoodState(levelNum).code);
-    //     //     }
-    //     // }
-
-    //     // start the level and fade in
-    //     game._evalLevelCode(null, null, true);
-    //     //game.display.focus();
-
-    //     // store the commands introduced in this level (for api reference)
-    //     //__commands = __commands.concat(editor.getProperties().commandsIntroduced).unique();
-    //     //localStorage.setItem(this._getLocalKey('helpCommands'), __commands.join(';'));
     // };
 
     // this._getLevelByPath = function (filePath) {
@@ -302,212 +451,18 @@ export default class Game {
     //     this._evalLevelCode();
     // };
 
-    // this._evalLevelCode = function (allCode, playerCode, isNewLevel, restartingLevelFromScript) {
+    callUnexposedMethod (f) {
+        if (this._playerCodeRunning) {
+            this._playerCodeRunning = false;
+            res = f();
+            this._playerCodeRunning = true;
+            return res;
+        } else {
+            return f();
+        }
+    };
 
-    //     var game = this;
-
-    //     // by default, get code from the editor
-    //     var loadedFromEditor = false;
-    //     if (!allCode) {
-    //         allCode = this.editor.getCode();
-    //         playerCode = this.editor.getPlayerCode();
-    //         loadedFromEditor = true;
-    //     }
-
-    //     // if we're editing a script file, do something completely different
-    //     if (this._currentFile !== null && !restartingLevelFromScript) {
-    //         this.validateAndRunScript(allCode);
-    //         return;
-    //     }
-
-    //     // save current display state (for scrolling up later)
-    //     //this.display.saveGrid(this.map);
-
-    //     // validate the code
-    //     // if it passes validation, returns the startLevel function if it pass
-    //     // if it fails validation, returns false
-    //     var validatedStartLevel = validate(allCode, playerCode, restartingLevelFromScript, this);
-
-    //     if (validatedStartLevel) { // code is valid
-    //         // reset the map
-    //         this.map._reset(); // for cleanup
-    //         this.map = new GameMap(this.rotDisplay, this);
-    //         this.map._reset();
-    //         this.map._setProperties(this.editor.getProperties()['mapProperties']);
-
-    //         // save editor state
-    //         __currentCode = allCode;
-    //         if (loadedFromEditor && !restartingLevelFromScript) {
-    //             this.editor.saveGoodState();
-    //         }
-
-    //         // clear drawing canvas and hide it until level loads
-    //         // var screenCanvas = $('#screen canvas')[0];
-    //         // $('#drawingCanvas')[0].width = screenCanvas.width;
-    //         // $('#drawingCanvas')[0].height = screenCanvas.height;
-    //         // $('#drawingCanvas').hide();
-    //         // $('#dummyDom').hide();
-
-    //         // set correct inventory state
-    //         //this.setInventoryStateByLevel(this._currentLevel);
-
-    //         // start the level
-    //         validatedStartLevel(this.map);
-
-    //         // deal with sneaky players
-    //         //this.clearModifiedGlobals();
-
-    //         // draw the map
-    //         this.rotDisplay.__fadeIn(this.map, isNewLevel ? 100 : 10, function () {
-    //             game.map.refresh(); // refresh inventory display
-
-    //             // // show map overlays if necessary
-    //             // if (game.map._properties.showDrawingCanvas) {
-    //             //     $('#drawingCanvas').show();
-    //             // } else if (game.map._properties.showDummyDom) {
-    //             //     $('#dummyDom').show();
-    //             // }
-
-    //             // workaround because we can't use writeStatus() in startLevel()
-    //             // (due to the text getting overwritten by the fade-in)
-    //             if (game.editor.getProperties().startingMessage) {
-    //                 game.display.writeStatus(game.editor.getProperties().startingMessage);
-    //             }
-    //         });
-
-    //         this.map._ready();
-
-    //         // start bg music for this level
-    //         // if (this.editor.getProperties().music) {
-    //         //     this.sound.playTrackByName(this.editor.getProperties().music);
-    //         // }
-
-    //         // // activate super menu if 21_endOfTheLine has been reached
-    //         // if (this._levelReached >= 21) {
-    //         //     this.activateSuperMenu();
-    //         // }
-
-    //         // finally, allow player movement
-    //         // if (this.map.getPlayer()) {
-    //         //     this.map.getPlayer()._canMove = true;
-    //         //     game.display.focus();
-    //         // }
-    //     } else { // code is invalid
-    //         // play error sound
-    //         this.sound.playSound('static');
-
-    //         // disable player movement
-    //         this.map.getPlayer()._canMove = false;
-    //     }
-    // };
-
-    // this._callUnexposedMethod = function (f) {
-    //     if (__playerCodeRunning) {
-    //         __playerCodeRunning = false;
-    //         res = f();
-    //         __playerCodeRunning = true;
-    //         return res;
-    //     } else {
-    //         return f();
-    //     }
-    // };
-
-    // function validate (allCode, playerCode, restartingLevelFromScript, g) {
-    //     var game = g;
     
-    //     try {
-    //         // for (var i = 0; i < verbotenWords.length; i++) {
-    //         //     var badWord = verbotenWords[i];
-    //         //     if (playerCode.indexOf(badWord) > -1) {
-    //         //         throw "You are not allowed to use '" + badWord + "'!";
-    //         //     }
-    //         // }
-    
-    //         // var dummyMap = new GameMap(util.DummyDisplay, game);
-    //         // dummyMap._dummy = true;
-    //         // dummyMap._setProperties(this.editor.getProperties().mapProperties);
-    
-    //         // modify the code to always check time to prevent infinite loops
-    //         allCode = allCode.replace(/\)\s*{/g, ") {"); // converts Allman indentation -> K&R
-    //         allCode = allCode.replace(/\n\s*while\s*\((.*)\)/g, "\nfor (dummy=0;$1;)"); // while -> for
-    //         allCode = allCode.split('\n').map(function (line, i) {
-    //             return line.replace(/for\s*\((.*);(.*);(.*)\)\s*{/g,
-    //                 "for ($1, startTime = Date.now();$2;$3){" +
-    //                     "if (Date.now() - startTime > " + game.allowedTime + ") {" +
-    //                         "throw '[Line " + (i+1) + "] TimeOutException: Maximum loop execution time of " + game.allowedTime + " ms exceeded.';" +
-    //                     "}");
-    //         }).join('\n');
-    
-    //         // if (this._debugMode) {
-    //         //     console.log(allCode);
-    //         // }
-    
-    //         // evaluate the code to get startLevel() and (opt) validateLevel() methods
-    
-    //         //this._eval(allCode);
-    //         window.eval(allCode);
-    
-    //         // start the level on a dummy map to validate
-    //         // this._setPlayerCodeRunning(true);
-    //         // startLevel(dummyMap);
-    //         // this._setPlayerCodeRunning(false);
-    
-    //         // // re-run to check if the player messed with startLevel
-    //         // this._startOfStartLevelReached = false;
-    //         // this._endOfStartLevelReached = false;
-    //         // dummyMap._reset();
-    //         // startLevel(dummyMap);
-    
-    //         // // does startLevel() execute fully?
-    //         // // (if we're restarting a level after editing a script, we can't test for this
-    //         // // - nor do we care)
-    //         // if (!this._startOfStartLevelReached && !restartingLevelFromScript) {
-    //         //     throw 'startLevel() has been tampered with!';
-    //         // }
-    //         // if (!this._endOfStartLevelReached && !restartingLevelFromScript) {
-    //         //     throw 'startLevel() returned prematurely!';
-    //         // }
-    
-    //         // // has the player tampered with any functions?
-    //         // this.detectTampering(dummyMap, dummyMap.getPlayer());
-    
-    //         // this.validateLevel = function () { return true; };
-    //         // // does validateLevel() succeed?
-    //         // if (typeof(validateLevel) === "function") {
-    //         //     this.validateLevel = validateLevel;
-    //         //     validateLevel(dummyMap);
-    //         // }
-    
-    //         // this.onExit = function () { return true; };
-    //         // if (typeof onExit === "function") {
-    //         //     this.onExit = onExit;
-    //         // }
-    
-    //         // this.objective = function () { return false; };
-    //         // if (typeof objective === "function") {
-    //         //     this.objective = objective;
-    //         // }
-    
-    //         return window.startLevel;
-    //     } catch (e) {
-    //         // cleanup
-    //         //this._setPlayerCodeRunning(false);
-    
-    //         // var exceptionText = e.toString();
-    //         // if (e instanceof SyntaxError) {
-    //         //     var lineNum = this.findSyntaxError(allCode, e.message);
-    //         //     if (lineNum) {
-    //         //         exceptionText = "[Line " + lineNum + "] " + exceptionText;
-    //         //     }
-    //         // }
-    //         // this.display.appendError(exceptionText);
-
-    //         console.log(e);
-    
-    //         // throw e; // for debugging
-    //         return null;
-    //     }
-    // };
 
     
 

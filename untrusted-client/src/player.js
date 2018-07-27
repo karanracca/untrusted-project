@@ -1,23 +1,20 @@
 export default function Player(x, y, __map, __game) {
+    
     /* private variables */
-
     var __x = x;
     var __y = y;
     var __color = "#0f0";
     var __lastMoveDirection = '';
 
-    var __display = __map._display;
-
+    var __display = __map.display;
     /* unexposed variables */
-
     this._canMove = false;
 
     /* wrapper */
-
     function wrapExposedMethod(f, player) {
         return function () {
             var args = arguments;
-            return __game._callUnexposedMethod(function () {
+            return __game.callUnexposedMethod(function () {
                 return f.apply(player, args);
             });
         };
@@ -39,7 +36,7 @@ export default function Player(x, y, __map, __game) {
 
     // (used for teleporters)
     this._moveTo = function (dynamicObject) {
-        if (__game._isPlayerCodeRunning()) { throw 'Forbidden method call: player._moveTo()';}
+        if (__game.isPlayerCodeRunning) { throw 'Forbidden method call: player._moveTo()';}
 
         // no safety checks or anything
         // this method is about as safe as a war zone
@@ -48,26 +45,26 @@ export default function Player(x, y, __map, __game) {
         __display.drawAll(__map);
 
         // play teleporter sound
-        __game.sound.playSound('blip');
+        //__game.sound.playSound('blip');
     };
 
     this._afterMove = function (x, y) {
-        if (__game._isPlayerCodeRunning()) { throw 'Forbidden method call: player._afterMove()';}
+        if (__game.isPlayerCodeRunning) { throw 'Forbidden method call: player._afterMove()';}
 
-        var player = this;
+        let player = this;
 
         this._hasTeleported = false; // necessary to prevent bugs with teleportation
 
         __map._hideChapter();
         __map._moveAllDynamicObjects();
 
-        var onTransport = false;
+        let onTransport = false;
 
         // check for collision with transport object
-        for (var i = 0; i < __map.getDynamicObjects().length; i++) {
-            var object = __map.getDynamicObjects()[i];
+        for (let i = 0; i < __map._dynamicObjects.length; i++) {
+            let object = __map._dynamicObjects[i];
             if (object.getX() === x && object.getY() === y) {
-                var objectDef = __map._getObjectDefinition(object.getType());
+                let objectDef = __map.getObjectDefinition(object.getType());
                 if (objectDef.transport) {
                     onTransport = true;
                 }
@@ -77,8 +74,8 @@ export default function Player(x, y, __map, __game) {
         // check for collision with static object UNLESS
         // we are on a transport
         if (!onTransport) {
-            var objectName = __map._getGrid()[x][y].type;
-            var objectDef = __map._getObjectDefinition(objectName);
+            let objectName = __map._grid[x][y].type;
+            let objectDef = __map.getObjectDefinition(objectName);
             if (objectDef.type === 'item') {
                 this._pickUpItem(objectName, objectDef);
             } else if (objectDef.onCollision) {
@@ -89,7 +86,7 @@ export default function Player(x, y, __map, __game) {
         }
 
         // check for collision with any lines on the map
-        __map.testLineCollisions(this);
+        //__map.testLineCollisions(this);
 
         // check for nonstandard victory condition (e.g. DOM level)
         if (typeof(__game.objective) === 'function' && __game.objective(__map)) {
@@ -133,19 +130,19 @@ export default function Player(x, y, __map, __game) {
         if (__map._overrideKeys[direction] && fromKeyboard) {
             try {
                 __game.validateCallback(__map._overrideKeys[direction], true);
-
                 __map.refresh();
                 this._canMove = false;
                 __map._reenableMovementForPlayer(this); // (key delay can vary by map)
                 this._afterMove(__x, __y);
             } catch (e) {
+                console.log(e);
             }
 
             return;
         }
 
-        var new__x;
-        var new__y;
+        let new__x;
+        let new__y;
         if (direction === 'up') {
             new__x = __x;
             new__y = __y - 1;
@@ -180,12 +177,13 @@ export default function Player(x, y, __map, __game) {
             this._canMove = false;
 
             __lastMoveDirection = direction;
+            
             this._afterMove(__x, __y);
 
             __map._reenableMovementForPlayer(this); // (key delay can vary by map)
         } else {
             // play bump sound
-            __game.sound.playSound('select');
+            //__game.sound.playSound('select');
         }
     }, this);
 

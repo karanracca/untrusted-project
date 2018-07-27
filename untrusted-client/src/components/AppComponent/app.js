@@ -8,16 +8,16 @@ class App extends Component {
     
     componentDidMount() {
         let startLevel = util.getParameterByName('lvl') ? parseInt(getParameterByName('lvl')) : null;
-        let game = new Game(true, startLevel);
+        let game = new Game(startLevel, "rotDisplay");
         console.log(game);
         game.initialize();
 
         // contentEditable is required for canvas elements to detect keyboard events
-        game.rotDisplay.__getDisplay.getContainer().setAttribute("contentEditable", "true");
+        game.display.getContainer().setAttribute("contentEditable", "true");
         
-        document.getElementById("rotDisplay").appendChild(game.rotDisplay.__getDisplay.getContainer());
+        document.getElementById("rotDisplay").appendChild(game.display.getContainer());
 
-        document.getElementById("rotDisplay").addEventListener("keydown", (e) => util.setEventHandler(e, game));
+        
     }
 
     render() {
