@@ -1,0 +1,71 @@
+#container {
+	display: table-cell;
+	vertical-align: middle;
+}
+
+#panes {
+	display: table;
+	margin: 0 auto;
+	position: relative;
+}
+
+#screenPane {
+	color: transparent;
+	float: left;
+	clear: left;
+	position: relative;
+}
+
+#editorPane {
+	float: left;
+	position: relative;
+	left: -2px;
+}
+
+#editorPane #editor {
+	
+}
+
+#editorPane #buttons {
+	margin-top: 5px;
+	padding: 7px;
+	background: #000;
+	cursor: pointer;
+}
+
+#editorPane #buttons a:hover {
+	background: #fff;
+	color: #000;
+}
+
+#editorPane #buttons .keys {
+	background: #fff;
+	color: #000;
+	display: inline-block; /* for min-width */
+	min-width: 15px;
+	text-align: center;
+}
+
+.CodeMirror {
+	border: 2px solid #333;
+	border-left: 0;
+	margin-left: 2px;
+}
+
+.CodeMirror-cursor, .CodeMirror-selected {
+	z-index: 10;
+}
+
+.CodeMirror.focus {
+	border: 2px solid #888;
+	border-left: 2px solid #888;
+	margin-left: 0;
+}
+
+.CodeMirror-lines .disabled {
+	background: #511 !important;
+}
+
+.CodeMirror-lines .disabled .editableSection {
+	background: rgba(0, 0, 0, 0.5); /* semi-transparent so we can see selection over it */
+}

@@ -293,15 +293,16 @@ export default class Map {
         this.refresh();
     };
 
-    //     this._removeItemFromMap = function (x, y, klass) {
-    //         if (__game._isPlayerCodeRunning()) { throw 'Forbidden method call: map._removeItemFromMap()';}
+    _removeItemFromMap (x, y, klass) {
+        if (this.game.isPlayerCodeRunning) { throw 'Forbidden method call: map._removeItemFromMap()'; }
 
-    //         var x = Math.floor(x); var y = Math.floor(y);
+        x = Math.floor(x); 
+        y = Math.floor(y);
 
-    //         if (__grid[x][y].type === klass) {
-    //             __grid[x][y].type = 'empty';
-    //         }
-    //     };
+        if (this._grid[x][y].type === klass) {
+            this._grid[x][y].type = 'empty';
+        }
+    };
 
     _reenableMovementForPlayer(player) {
         if (this.game.isPlayerCodeRunning) { throw 'Forbidden method call: map._reenableMovementForPlayer()'; }

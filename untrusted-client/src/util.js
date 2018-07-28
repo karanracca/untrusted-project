@@ -95,9 +95,11 @@ export function getListOfObjects (__game) {
             'symbol': String.fromCharCode(0x2318), // ⌘
             'color': '#ccc',
             'onPickUp': function (player) {
-                $('#editorPane').fadeIn();
-                game.editor.refresh();
-                game.map.writeStatus('You have picked up the computer!');
+                //TODO
+                // $('#editorPane').fadeIn();
+                // game.editor.refresh();
+                // game.map.writeStatus('You have picked up the computer!');
+                console.log("Picked up computer");
             },
             'onDrop': function () {
                 $('#editorPane').hide();

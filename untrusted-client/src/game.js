@@ -9,10 +9,12 @@ import ValidateCode from './validate';
 
 export default class Game {
 
-    constructor(startLevel, domElement) {
+    constructor(startLevel, domElement, app) {
+        this.app = app;
         this.startLevel = startLevel;
         this.display = null;
         this.domElement = domElement;
+        this.inventory = [];
         /* private properties */
         this._currentCode = '';
         this.__commands = [];
@@ -34,17 +36,11 @@ export default class Game {
         //this._playerPrototype = new Player; // to allow messing with map.js and player.js later
     }
 
-    /* unexposed getters */
-    get getHelpCommands () { return __commands; };
-    get isPlayerCodeRunning () { return this._playerCodeRunning; };
-    //get _getLocalKey (key) { return (this._mod.length == 0 ? '' : this._mod + '.') + key; };
+    get getHelpCommands() { return __commands; };
+    get isPlayerCodeRunning() { return this._playerCodeRunning; };
+    set _setPlayerCodeRunning(pcr) { this._playerCodeRunning = pcr };
 
-    /* unexposed setters */
-    set _setPlayerCodeRunning (pcr) { this._playerCodeRunning = pcr };
-
-    /* unexposed methods */
-    
-    initialize () {
+    initialize() {
         //TODO set from backend
         // Get last level reached from localStorage (if any)
         let levelKey = this._mod.length == 0 ? 'levelReached' : this._mod + '.levelReached';
@@ -104,10 +100,10 @@ export default class Game {
         // Lights, camera, action
         if (this.startLevel) {
             this._currentLevel = this.startLevel - 1;
-            this._getLevel(this.startLevel);
+            this.getLevel(this.startLevel);
         } else if (this._levelReached != 1) {
             // load last level reached (unless it's the credits)
-            this._getLevel(Math.min(this._levelReached, 21));
+            this.getLevel(Math.min(this._levelReached, 21));
         } else {
             this.display.playIntro(this.dimensions.height);
         }
@@ -117,8 +113,8 @@ export default class Game {
             // directions for moving entities
 
             if (this.display._intro == true) {
-                this.display._intro = false ;
-                this.start(); 
+                this.display._intro = false;
+                this.start();
             } else if (config.keys[e.keyCode] && this.map.player) {
                 this.map.player.move(config.keys[e.keyCode], true);
             }
@@ -126,30 +122,30 @@ export default class Game {
         });
     };
 
-    start (lvl) {
+    start(lvl) {
         this.getLevel(lvl ? lvl : 1);
     };
 
     // makes an ajax request to get the level text file and then loads it into the game
-    getLevel (levelNum, isResetting, movingToNextLevel) {
+    getLevel(levelNum, isResetting, movingToNextLevel) {
         let game = this;
         let editor = this.editor;
 
         if (levelNum > config.levelFileNames.length) return;
 
         this._levelReached = Math.max(levelNum, this._levelReached);
-        
+
         //Store level in local storage
         localStorage.setItem('levelReached', this._levelReached);
 
         let fileName = config.levelFileNames[levelNum - 1];
         let lvlCode = config.levels['levels/' + fileName];
 
-        if (movingToNextLevel) {
-            // save level state and create a gist
-            editor.saveGoodState();
-            editor.createGist();
-        }
+        // if (movingToNextLevel) {
+        //     // save level state and create a gist
+        //     editor.saveGoodState();
+        //     editor.createGist();
+        // }
 
         game._currentLevel = levelNum;
         game._currentBonusLevel = null;
@@ -189,10 +185,93 @@ export default class Game {
         //localStorage.setItem(this._getLocalKey('helpCommands'), __commands.join(';'));
     };
 
-      evalLevelCode(allCode, playerCode, isNewLevel, restartingLevelFromScript) {
-        
+    validateCallback(callback, throwExceptions, ignoreForbiddenCalls) {
+        try {
+            // run the callback and check for forbidden method calls
+            try {
+                if (!ignoreForbiddenCalls) {
+                    this._setPlayerCodeRunning = true ;
+                }
+                var result = callback();
+                this._setPlayerCodeRunning = false;
+            } catch (e) {
+                // cleanup
+                this._setPlayerCodeRunning = false;
+
+                if (e.toString().indexOf("Forbidden method call") > -1) {
+                    // display error, disable player movement
+                    this.display.appendError(e.toString(), "%c{red}Please reload the level.");
+                    this.sound.playSound('static');
+                    this.map.getPlayer()._canMove = false;
+                    this.map._callbackValidationFailed = true;
+
+                    // throw e; // for debugging
+                    return;
+                } else {
+                    // other exceptions are fine here - just pass them up
+                    throw e;
+                }
+            }
+
+            // check if validator still passes
+            try {
+                if (typeof (this.validateLevel) === 'function') {
+                    this.validateLevel(this.map);
+                }
+            } catch (e) {
+                // validation failed - not much to do here but restart the level, unfortunately
+                this.display.appendError(e.toString(), "%c{red}Validation failed! Please reload the level.");
+
+                // play error sound
+                this.sound.playSound('static');
+
+                // disable player movement
+                this.map.getPlayer()._canMove = false;
+                this.map._callbackValidationFailed = true;
+
+                return;
+            }
+
+            // on maps with many objects (e.g. boss fight),
+            // we can't afford to do these steps
+            if (!this.map._properties.quickValidateCallback) {
+                this.clearModifiedGlobals();
+
+                // has the player tampered with any functions?
+                try {
+                    this.detectTampering(this.map, this.map.getPlayer());
+                } catch (e) {
+                    this.display.appendError(e.toString(), "%c{red}Validation failed! Please reload the level.");
+
+                    // play error sound
+                    this.sound.playSound('static');
+
+                    // disable player movement
+                    this.map.getPlayer()._canMove = false;
+                    this.map._callbackValidationFailed = true;
+
+                    return;
+                }
+
+                // refresh the map, just in case
+                this.map.refresh();
+
+                return result;
+            }
+        } catch (e) {
+            //this.map.writeStatus(e.toString());
+            console.log(e);
+            // throw e; // for debugging
+            if (throwExceptions) {
+                throw e;
+            }
+        }
+    };
+
+    evalLevelCode(allCode, playerCode, isNewLevel, restartingLevelFromScript) {
+
         let game = this;
-        
+
         // by default, get code from the editor
         let loadedFromEditor = false;
         if (!allCode) {
@@ -244,7 +323,7 @@ export default class Game {
 
             // draw the map
             this.display.fadeIn(this.map, isNewLevel ? 100 : 10, () => {
-                
+
                 //this.map.refresh(); // refresh inventory display
 
                 // // show map overlays if necessary
@@ -286,6 +365,13 @@ export default class Game {
         }
     };
 
+    addToInventory(itemName) {
+        if (this.inventory.indexOf(itemName) === -1) {
+            this.inventory.push(itemName);
+            this.app.drawInventory(itemName);
+        }
+    };
+
     // setInventoryStateByLevel (levelNum) {
     //     // first remove items that have onDrop effects on UI
     //     if (levelNum == 1) {
@@ -294,10 +380,10 @@ export default class Game {
     //     if (levelNum <= 7) {
     //         this.removeFromInventory('phone');
     //     }
-    
+
     //     // clear any remaining items from inventory
     //     this.inventory = [];
-    
+
     //     // repopulate inventory by level
     //     if (levelNum > 1) {
     //         this.addToInventory('computer');
@@ -329,7 +415,7 @@ export default class Game {
     //     if (levelNum > 20) {
     //         this.addToInventory('theAlgorithm');
     //     }
-    
+
     //     // clear any status messages generated by this
     //     this.map._status = '';
     // };
@@ -342,35 +428,35 @@ export default class Game {
     //     if (object.type != 'item') {
     //         throw 'Object is not an item: ' + itemName;
     //     }
-    
+
     //     this.inventory.remove(itemName);
     //     this.drawInventory();
-    
+
     //     if (object.onDrop) {
     //         object.onDrop(this);
     //     }
     // };
 
-    // this._moveToNextLevel = function () {
-    //     // is the player permitted to exit?
-    //     if (typeof this.onExit === 'function' && !this.onExit(this.map)) {
-    //         this.sound.playSound('blip');
-    //         return;
-    //     }
+    _moveToNextLevel () {
+        // is the player permitted to exit?
+        if (typeof this.onExit === 'function' && !this.onExit(this.map)) {
+            this.sound.playSound('blip');
+            return;
+        }
 
-    //     this.sound.playSound('complete');
+        //this.sound.playSound('complete');
 
-    //     //we disable moving so the player can't move during the fadeout
-    //     this.map.getPlayer()._canMove = false;
+        //we disable moving so the player can't move during the fadeout
+        this.map.player._canMove = false;
 
-    //     if (this._currentLevel == 'bonus') {
-    //         // open main menu
-    //         $('#helpPane, #notepadPane').hide();
-    //         $('#menuPane').show();
-    //     } else {
-    //         this._getLevel(this._currentLevel + 1, false, true);
-    //     }
-    // };
+        if (this._currentLevel == 'bonus') {
+            // open main menu
+            $('#helpPane, #notepadPane').hide();
+            $('#menuPane').show();
+        } else {
+            this.getLevel(this._currentLevel + 1, false, true);
+        }
+    };
 
     // this._jumpToNthLevel = function (levelNum) {
     //     this._currentFile = null;
@@ -451,7 +537,7 @@ export default class Game {
     //     this._evalLevelCode();
     // };
 
-    callUnexposedMethod (f) {
+    callUnexposedMethod(f) {
         if (this._playerCodeRunning) {
             this._playerCodeRunning = false;
             res = f();
@@ -462,9 +548,9 @@ export default class Game {
         }
     };
 
-    
 
-    
+
+
 
 
 

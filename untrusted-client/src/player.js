@@ -95,24 +95,25 @@ export default function Player(x, y, __map, __game) {
     };
 
     this._pickUpItem = function (itemName, object) {
-        if (__game._isPlayerCodeRunning()) { throw 'Forbidden method call: player._pickUpItem()';}
+        if (__game.isPlayerCodeRunning) { throw 'Forbidden method call: player._pickUpItem()'}
 
-        var player = this;
+        let player = this;
 
         __game.addToInventory(itemName);
         __map._removeItemFromMap(__x, __y, itemName);
         __map.refresh();
-        __game.sound.playSound('pickup');
+        //__game.sound.playSound('pickup');
 
         if (object.onPickUp) {
-            __game.validateCallback(function () {
-                setTimeout(function () {
-                    object.onPickUp(player);
-                }, 100);
-                // timeout is so that written text is not immediately overwritten
-                // TODO: play around with Display.writeStatus so that this is
-                // not necessary
-            });
+            // __game.validateCallback(function () {
+            //     setTimeout(function () {
+            //         object.onPickUp(player);
+            //     }, 100);
+            //     // timeout is so that written text is not immediately overwritten
+            //     // TODO: play around with Display.writeStatus so that this is
+            //     // not necessary
+            // });
+            object.onPickUp(player);
         }
     };
 
