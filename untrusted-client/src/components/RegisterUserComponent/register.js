@@ -26,7 +26,7 @@ export default class Register extends Component {
 
     handleSubmit(event) {
         event.preventDefault();
-        axios.post('http://localhost:63174/api/users/CreateUser', {
+        axios.post('http://localhost:63173/api/users/CreateUser', {
             username: this.state.username,
             password: this.state.password,
             firstName: this.state.firstName,

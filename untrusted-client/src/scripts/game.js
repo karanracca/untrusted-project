@@ -133,7 +133,7 @@ export default class Game {
         //   });
         // let levelTime = (levelNum + 2) * 60;
 
-        this.timer.start(levelTime);
+        //this.timer.start(levelTime);
         
         let game = this;
         let editor = this.editor;

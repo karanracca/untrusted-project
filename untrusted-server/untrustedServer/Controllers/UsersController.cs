@@ -46,11 +46,24 @@ namespace untrustedServer.Controllers
             }
 
             User user = us.login(login.username, login.password);
-            if(user == null)
+            if (user == null)
             {
                 return NotFound();
             }
             return Ok(user);
+        }
+
+        [HttpGet]
+        [Route("api/[controller]/[action]")]
+        [ActionName("Leaderboard")]
+        public IEnumerable<Stats> GetLeaderBoard()
+        {
+            List<User> users = us.GetUsers();
+            if (users.Count() == 0)
+            {
+                return Enumerable.Empty<Stats>();
+            }
+            return users.Select(user => new Stats(user.firstName, user.lastName, user.score, user.level));
         }
     }
 }

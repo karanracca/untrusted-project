@@ -30,6 +30,12 @@ namespace untrustedServer.Models
         [BsonElement("phone")]
         public string phone { get; set; }
 
+        [BsonElement("score")]
+        public int score { get; set; } = 0;
+
+        [BsonElement("level")]
+        public int level { get; set; } = 1;
+
         public User(string username, string password, string firstName, string lastName, string email, string phone)
         {
             this.username = username;
@@ -40,7 +46,9 @@ namespace untrustedServer.Models
             this.phone = phone;
         }
 
-        public User() { }
+        public User()
+        {
+        }
 
     }
 }
