@@ -38,14 +38,14 @@ namespace untrustedServer.Controllers
         [HttpPost]
         [Route("api/[controller]/[action]")]
         [ActionName("Login")]
-        public IActionResult Login([FromQuery] string username, [FromQuery] string password)
+        public IActionResult Login([FromBody] Login login)
         {
-            if (string.IsNullOrEmpty(username) || string.IsNullOrEmpty(password))
+            if (string.IsNullOrEmpty(login.username) || string.IsNullOrEmpty(login.password))
             {
                 return new BadRequestResult();
             }
 
-            User user = us.login(username, password);
+            User user = us.login(login.username, login.password);
             if(user == null)
             {
                 return NotFound();
