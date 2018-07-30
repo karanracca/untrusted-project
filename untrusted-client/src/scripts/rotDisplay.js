@@ -132,6 +132,27 @@ export default class GameDisplay extends ROT.Display {
         }
     };
 
+    writeStatus (text) {
+        let h = this.game.map.height;
+        let w = this.game.map.width;
+
+        let strings = [text];
+        
+        if (text.length > w) {
+            // split into two lines
+            let minCutoff = w - 10;
+            let cutoff = minCutoff + text.slice(minCutoff).indexOf(" ");
+            strings = [text.slice(0, cutoff), text.slice(cutoff + 1)];
+        }
+    
+        for (let i = 0; i < strings.length; i++) {
+            let str = strings[i];
+            let x = Math.floor((w - str.length) / 2);
+            let y = h + i - strings.length - 1;
+            this.drawText(x, y, str);
+        }
+    };
+
     playIntro (height, i) {
         if (i < 0) {
             this._intro = true;
@@ -147,4 +168,5 @@ export default class GameDisplay extends ROT.Display {
             setTimeout(this.playIntro(height, i - 1), 100);
         }
     };
+
 }

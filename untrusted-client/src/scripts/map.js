@@ -8,7 +8,7 @@ export default class Map {
         this.game = game;
         this.display = display;
         this.player;
-        this.objectDefinitions;
+        this.objectDefinitions = util.getListOfObjects(this.game);
         this.domCSS = '';
         this.chapterHideTimeout;
 
@@ -27,6 +27,9 @@ export default class Map {
         this.dummy = false; // overridden by dummyMap in validate.js
         this.status = '';
         this._overrideKeys = {};
+
+        /* initialization */
+        this.reset();
     }
 
     get width() { return this.game.dimensions.width; };
@@ -293,10 +296,10 @@ export default class Map {
         this.refresh();
     };
 
-    _removeItemFromMap (x, y, klass) {
+    _removeItemFromMap(x, y, klass) {
         if (this.game.isPlayerCodeRunning) { throw 'Forbidden method call: map._removeItemFromMap()'; }
 
-        x = Math.floor(x); 
+        x = Math.floor(x);
         y = Math.floor(y);
 
         if (this._grid[x][y].type === klass) {
@@ -377,27 +380,24 @@ export default class Map {
         //__game.drawInventory();
     };
 
-    //     this.countObjects = wrapExposedMethod(function (type) {
-    //         var count = 0;
-
-    //         // count static objects
-    //         for (var x = 0; x < this.getWidth(); x++) {
-    //             for (var y = 0; y < this.getHeight(); y++) {
-    //                 if (__grid[x][y].type === type) {
-    //                     count++;
-    //                 }
-    //             }
-    //         }
-
-    //         // count dynamic objects
-    //         this.getDynamicObjects().forEach(function (obj) {
-    //             if (obj.getType() === type) {
-    //                 count++;
-    //             }
-    //         })
-
-    //         return count;
-    //     }, this);
+    countObjects (type) {
+        let count = 0;
+        // count static objects
+        for (let x = 0; x < this.width; x++) {
+            for (let y = 0; y < this.height; y++) {
+                if (this._grid[x][y].type === type) {
+                    count++;
+                }
+            }
+        }
+        // count dynamic objects
+        this.dynamicObjects.forEach(function (obj) {
+            if (obj.getType() === type) {
+                count++;
+            }
+        })
+        return count;
+    };
 
     placeObject(x, y, type) {
         x = Math.floor(x);
@@ -633,33 +633,33 @@ export default class Map {
 
     //     /* validators */
 
-    //     this.validateAtLeastXObjects = wrapExposedMethod(function(num, type) {
-    //         var count = this.countObjects(type);
-    //         if (count < num) {
-    //             throw 'Not enough ' + type + 's on the map! Expected: ' + num + ', found: ' + count;
-    //         }
-    //     }, this);
+    validateAtLeastXObjects(num, type) {
+        let count = this.countObjects(type);
+        if (count < num) {
+            throw 'Not enough ' + type + 's on the map! Expected: ' + num + ', found: ' + count;
+        }
+    };
 
-    //     this.validateAtMostXObjects = wrapExposedMethod(function(num, type) {
-    //         var count = this.countObjects(type);
-    //         if (count > num) {
-    //             throw 'Too many ' + type + 's on the map! Expected: ' + num + ', found: ' + count;
-    //         }
-    //     }, this);
+    validateAtMostXObjects (num, type) {
+        let count = this.countObjects(type);
+        if (count > num) {
+            throw 'Too many ' + type + 's on the map! Expected: ' + num + ', found: ' + count;
+        }
+    };
 
-    //     this.validateExactlyXManyObjects = wrapExposedMethod(function(num, type) {
-    //         var count = this.countObjects(type);
-    //         if (count != num) {
-    //             throw 'Wrong number of ' + type + 's on the map! Expected: ' + num + ', found: ' + count;
-    //         }
-    //     }, this);
+    validateExactlyXManyObjects (num, type) {
+        let count = this.countObjects(type);
+        if (count != num) {
+            throw 'Wrong number of ' + type + 's on the map! Expected: ' + num + ', found: ' + count;
+        }
+    };
 
-    //     this.validateAtMostXDynamicObjects = wrapExposedMethod(function(num) {
-    //         var count = this.getDynamicObjects().length;
-    //         if (count > num) {
-    //             throw 'Too many dynamic objects on the map! Expected: ' + num + ', found: ' + count;
-    //         }
-    //     }, this);
+    validateAtMostXDynamicObjects (num) {
+        let count = this.dynamicObjects.length;
+        if (count > num) {
+            throw 'Too many dynamic objects on the map! Expected: ' + num + ', found: ' + count;
+        }
+    };
 
     //     this.validateNoTimers = wrapExposedMethod(function() {
     //         var count = this._countTimers();
@@ -668,14 +668,10 @@ export default class Map {
     //         }
     //     }, this);
 
-    //     this.validateAtLeastXLines = wrapExposedMethod(function(num) {
-    //         var count = this._getLines().length;
-    //         if (count < num) {
-    //             throw 'Not enough lines on the map! Expected: ' + num + ', found: ' + count;
-    //         }
-    //     }, this);
-
-    //     /* initialization */
-
-    //     this._reset();
+    validateAtLeastXLines (num) {
+        let count = this._lines.length;
+        if (count < num) {
+            throw 'Not enough lines on the map! Expected: ' + num + ', found: ' + count;
+        }
+    };
 }

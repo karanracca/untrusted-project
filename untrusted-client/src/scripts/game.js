@@ -6,6 +6,7 @@ import * as config from './config';
 import CodeEditor from './codeEditor';
 import RotDisplay from './rotDisplay';
 import ValidateCode from './validate';
+import Timer from 'timer.js';
 
 export default class Game {
 
@@ -17,12 +18,14 @@ export default class Game {
         this.inventory = [];
         /* private properties */
         this._currentCode = '';
-        this.__commands = [];
+        this._commands = [];
         this._playerCodeRunning = false;
         this.dimensions = {
             width: 50,
             height: 25
         };
+        this.timer;
+        this.remainingTime;
         this.editor = null;
         this.map = null;
         this._mod = '';
@@ -39,7 +42,7 @@ export default class Game {
     get getHelpCommands() { return __commands; };
     get isPlayerCodeRunning() { return this._playerCodeRunning; };
     set _setPlayerCodeRunning(pcr) { this._playerCodeRunning = pcr };
-
+    
     initialize() {
         //TODO set from backend
         // Get last level reached from localStorage (if any)
@@ -66,12 +69,6 @@ export default class Game {
             height: this.dimensions.height,
             fontSize: 20
         }, this);
-
-        //var display = this.rotDisplay.__getDisplay;
-        // $('#screen').append(this.display.getContainer());
-        // $('#drawingCanvas, #dummyDom, #dummyDom *').click(function () {
-        //     display.focus();
-        // });
 
         // Initialize editor, map, and objects
         this.editor = new CodeEditor("editor", 600, 500, this);
@@ -128,6 +125,16 @@ export default class Game {
 
     // makes an ajax request to get the level text file and then loads it into the game
     getLevel(levelNum, isResetting, movingToNextLevel) {
+        //Timer for each level
+        // this.timer = new Timer({
+        //     tick    : 1,
+        //     ontick  : function(ms) { console.log(ms + ' milliseconds left'); this.remainingTime = ms; },
+        //     onstop  : function() { console.log('timer stop') },
+        //   });
+        // let levelTime = (levelNum + 2) * 60;
+
+        this.timer.start(levelTime);
+        
         let game = this;
         let editor = this.editor;
 
@@ -259,7 +266,7 @@ export default class Game {
                 return result;
             }
         } catch (e) {
-            //this.map.writeStatus(e.toString());
+            this.display.writeStatus(e.toString());
             console.log(e);
             // throw e; // for debugging
             if (throwExceptions) {
@@ -359,9 +366,9 @@ export default class Game {
             }
         } else { // code is invalid
             // play error sound
-            this.sound.playSound('static');
+            //this.sound.playSound('static');
             // disable player movement
-            this.map.getPlayer()._canMove = false;
+            this.map.player._canMove = false;
         }
     };
 
@@ -505,31 +512,31 @@ export default class Game {
     //     }, 'text');
     // };
 
-    // this._resetLevel = function (level) {
-    //     var game = this;
-    //     var resetTimeout_msec = 2500;
+    resetLevel (level) {
+        let game = this;
+        let resetTimeout_msec = 2500;
 
-    //     if (this._resetTimeout != null) {
-    //         $('body, #buttons').css('background-color', '#000');
-    //         window.clearTimeout(this._resetTimeout);
-    //         this._resetTimeout = null;
+        if (this._resetTimeout != null) {
+            //$('body, #buttons').css('background-color', '#000');
+            window.clearTimeout(this._resetTimeout);
+            this._resetTimeout = null;
 
-    //         if (game._currentBonusLevel) {
-    //             game._getLevelByPath('levels/' + game._currentBonusLevel);
-    //         } else {
-    //             this._getLevel(level, true);
-    //         }
-    //     } else {
-    //         this.display.writeStatus("To reset this level press ^4 again.");
-    //         $('body, #buttons').css('background-color', '#900');
+            if (game._currentBonusLevel) {
+                game._getLevelByPath('levels/' + game._currentBonusLevel);
+            } else {
+                this.getLevel(level, true);
+            }
+        } else {
+            this.display.writeStatus("To reset this level press ^4 again.");
+            //$('body, #buttons').css('background-color', '#900');
 
-    //         this._resetTimeout = setTimeout(function () {
-    //             game._resetTimeout = null;
+            this._resetTimeout = setTimeout(function () {
+                game._resetTimeout = null;
 
-    //             $('body, #buttons').css('background-color', '#000');
-    //         }, resetTimeout_msec);
-    //     }
-    // };
+                //$('body, #buttons').css('background-color', '#000');
+            }, resetTimeout_msec);
+        }
+    };
 
     // // restart level with currently loaded code
     // this._restartLevel = function () {
@@ -540,7 +547,7 @@ export default class Game {
     callUnexposedMethod(f) {
         if (this._playerCodeRunning) {
             this._playerCodeRunning = false;
-            res = f();
+            let res = f();
             this._playerCodeRunning = true;
             return res;
         } else {

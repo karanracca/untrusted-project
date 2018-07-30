@@ -1,18 +1,22 @@
+import * as util from './util';
+import * as config from './config';
+import GameMap from './map';
+
 export default function Validate(allCode, playerCode, restartingLevelFromScript, g) {
     
     let game = g;
 
     try {
-        // for (var i = 0; i < verbotenWords.length; i++) {
-        //     var badWord = verbotenWords[i];
-        //     if (playerCode.indexOf(badWord) > -1) {
-        //         throw "You are not allowed to use '" + badWord + "'!";
-        //     }
-        // }
+        for (var i = 0; i < config.verbotenWords.length; i++) {
+            var badWord = config.verbotenWords[i];
+            if (playerCode.indexOf(badWord) > -1) {
+                throw "You are not allowed to use '" + badWord + "'!";
+            }
+        }
 
-        // var dummyMap = new GameMap(util.DummyDisplay, game);
-        // dummyMap._dummy = true;
-        // dummyMap._setProperties(this.editor.getProperties().mapProperties);
+        let dummyMap = new GameMap(new util.DummyDisplay, game);
+        dummyMap._dummy = true;
+        dummyMap.setProperties(game.editor.getProperties().mapProperties);
 
         // modify the code to always check time to prevent infinite loops
         allCode = allCode.replace(/\)\s*{/g, ") {"); // converts Allman indentation -> K&R
@@ -30,22 +34,21 @@ export default function Validate(allCode, playerCode, restartingLevelFromScript,
         
         window.eval(allCode);
 
-        // start the level on a dummy map to validate
-        // this._setPlayerCodeRunning(true);
-        // startLevel(dummyMap);
-        // this._setPlayerCodeRunning(false);
+        // // start the level on a dummy map to validate
+        // game._setPlayerCodeRunning = true;
+        // window.startLevel(dummyMap);
+        // game._setPlayerCodeRunning = false;
 
         // // re-run to check if the player messed with startLevel
-        // this._startOfStartLevelReached = false;
-        // this._endOfStartLevelReached = false;
-        // dummyMap._reset();
+        // game._startOfStartLevelReached = false;
+        // game._endOfStartLevelReached = false;
+        // dummyMap.reset();
         // startLevel(dummyMap);
 
         // // does startLevel() execute fully?
-        // // (if we're restarting a level after editing a script, we can't test for this
-        // // - nor do we care)
-        // if (!this._startOfStartLevelReached && !restartingLevelFromScript) {
-        //     throw 'startLevel() has been tampered with!';
+        // //(if we're restarting a level after editing a script, we can't test for this - nor do we care)
+        // if (!game._startOfStartLevelReached && !restartingLevelFromScript) {
+        //      throw 'startLevel() has been tampered with!';
         // }
         // if (!this._endOfStartLevelReached && !restartingLevelFromScript) {
         //     throw 'startLevel() returned prematurely!';

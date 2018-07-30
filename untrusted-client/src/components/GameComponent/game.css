@@ -1,29 +1,25 @@
 #container {
-	display: table-cell;
-	vertical-align: middle;
+	border: 3px solid green;
+    margin-top: 5%;
 }
 
 #panes {
-	display: table;
-	margin: 0 auto;
-	position: relative;
+	display: grid;
 }
 
 #screenPane {
 	color: transparent;
-	float: left;
-	clear: left;
-	position: relative;
+	grid-column-start: 1;
+  	grid-column-end: auto;
+  	grid-row-start: 1;
+  	grid-row-end: auto;
 }
 
 #editorPane {
-	float: left;
-	position: relative;
-	left: -2px;
-}
-
-#editorPane #editor {
-	
+	grid-column-start: 2;
+  	grid-column-end: auto;
+  	grid-row-start: 1;
+  	grid-row-end: auto;
 }
 
 #editorPane #buttons {

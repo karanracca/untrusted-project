@@ -6,12 +6,13 @@ export function getParameterByName(name) {
     return results == null ? "" : decodeURIComponent(results[1].replace(/\+/g, " "));
 }
 
-export const DummyDisplay = function () {
-    this.clear = function () {};
-    this.drawAll = function () {};
-    this.drawObject = function () {};
-    this.drawText = function () {};
-    this.writeStatus = function () {};
+export class DummyDisplay {
+    constructor() {}
+    clear () {};
+    drawAll () {};
+    drawObject () {};
+    drawText () {};
+    writeStatus () {};
 };
 
 export function getListOfObjects (__game) {
