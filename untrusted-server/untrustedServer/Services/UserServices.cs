@@ -27,9 +27,9 @@ namespace untrustedServer.Services
             return mongoCollection.Find(new BsonDocument()).ToList();
         }
 
-        public User GetUser(String email)
+        public User GetUser(ObjectId id)
         {
-            var filter = Builders<User>.Filter.Eq("email", email);
+            var filter = Builders<User>.Filter.Eq("_id", id);
             return mongoCollection.Find(filter).First();
         }
 
@@ -58,5 +58,18 @@ namespace untrustedServer.Services
             return GetUsers().Find(u => u.username == username && u.password == password);
         }
 
+        public User UpdateStats(User user)
+        {
+            var filter = Builders<User>.Filter.Eq("username", user.username);
+            int updatedLevel = user.level + 1;
+            int updatedScore = user.score + (10 * updatedLevel);
+            var update = Builders<User>.Update.Set("level", updatedLevel).Set("score", updatedScore);
+            UpdateResult updateResult = mongoCollection.UpdateOne(filter, update);
+            if (updateResult.IsAcknowledged)
+            {
+                return mongoCollection.Find(filter).First();
+            }
+            return null;
+        }
     }
 }
