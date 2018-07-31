@@ -63,7 +63,20 @@ namespace untrustedServer.Controllers
             {
                 return Enumerable.Empty<Stats>();
             }
-            return users.Select(user => new Stats(user.firstName, user.lastName, user.score, user.level));
+            return users.Select(user => new Stats(user.firstName, user.lastName, user.score, user.level)).OrderByDescending(stats => stats.score);
+        }
+
+        [HttpPost]
+        [Route("api/[controller]/[action]")]
+        [ActionName("UpdateStats")]
+        public IActionResult UpdateStats([FromBody]User user)
+        {
+            user = us.UpdateStats(user);
+            if (user == null)
+            {
+                return NotFound();
+            }
+            return Ok(user);
         }
     }
 }
