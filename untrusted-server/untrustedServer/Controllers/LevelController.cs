@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
 using untrustedServer.Models;
 using untrustedServer.Services;
@@ -10,7 +11,8 @@ using untrustedServer.Services;
 
 namespace untrustedServer.Controllers
 {
-    
+
+    [EnableCors("AllowAnyOrigin")]
     public class LevelController : Controller
     {
 
