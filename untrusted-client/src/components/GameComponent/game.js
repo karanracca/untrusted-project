@@ -24,10 +24,17 @@ class App extends Component {
         this.setState({ game }, () => {
             //console.log(game);
             this.state.game.initialize();
+            //this.state.game.start(1);
             // contentEditable is required for canvas elements to detect keyboard events
             this.state.game.display.getContainer().setAttribute("contentEditable", "true");
             document.getElementById("screen").appendChild(this.state.game.display.getContainer());
         });
+    }
+
+    levelComplete(currentLevel) {
+        //this.getLevel(this._currentLevel + 1, false, true); just temp refrence
+        this.state.game.getLevel(currentLevel + 1, false, true);
+        console.log(`Level ${currentLevel} complete, moving to ${currentLevel + 1} level`);
     }
 
     drawInventory(item) {

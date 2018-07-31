@@ -26,7 +26,12 @@ export default class Login extends Component {
             password: this.state.password
         })
             .then(response => {
-                this.props.history.push(`/game`);
+                console.log(response);
+                // axios.get('http://localhost:63174/api/level/getLevel', {
+                //     username: this.state.username,
+                //     password: this.state.password
+                // })
+                //this.props.history.push(`/game`);
                 console.log(response.data.username)
             })
             .catch(error => {

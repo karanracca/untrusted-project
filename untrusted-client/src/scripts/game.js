@@ -39,7 +39,7 @@ export default class Game {
         //this._playerPrototype = new Player; // to allow messing with map.js and player.js later
     }
 
-    get getHelpCommands() { return __commands; };
+    get helpCommands() { return _commands; };
     get isPlayerCodeRunning() { return this._playerCodeRunning; };
     set _setPlayerCodeRunning(pcr) { this._playerCodeRunning = pcr };
     
@@ -117,24 +117,18 @@ export default class Game {
             }
             //e.preventDefault();
         });
+
+        //this.display.playIntro(this.dimensions.height);
     };
 
     start(lvl) {
+        //TODO ask level from server
         this.getLevel(lvl ? lvl : 1);
     };
 
     // makes an ajax request to get the level text file and then loads it into the game
     getLevel(levelNum, isResetting, movingToNextLevel) {
-        //Timer for each level
-        // this.timer = new Timer({
-        //     tick    : 1,
-        //     ontick  : function(ms) { console.log(ms + ' milliseconds left'); this.remainingTime = ms; },
-        //     onstop  : function() { console.log('timer stop') },
-        //   });
-        // let levelTime = (levelNum + 2) * 60;
 
-        this.timer.start(levelTime);
-        
         let game = this;
         let editor = this.editor;
 
@@ -188,8 +182,8 @@ export default class Game {
         //game.display.focus();
 
         // store the commands introduced in this level (for api reference)
-        //__commands = __commands.concat(editor.getProperties().commandsIntroduced).unique();
-        //localStorage.setItem(this._getLocalKey('helpCommands'), __commands.join(';'));
+        this._commands = util.unique(this._commands.concat(editor.getProperties().commandsIntroduced));
+        localStorage.setItem('helpCommands', this._commands.join(';'));
     };
 
     validateCallback(callback, throwExceptions, ignoreForbiddenCalls) {
@@ -242,11 +236,11 @@ export default class Game {
             // on maps with many objects (e.g. boss fight),
             // we can't afford to do these steps
             if (!this.map._properties.quickValidateCallback) {
-                this.clearModifiedGlobals();
+                //this.clearModifiedGlobals();
 
                 // has the player tampered with any functions?
                 try {
-                    this.detectTampering(this.map, this.map.getPlayer());
+                    this.detectTampering(this.map, this.map.player);
                 } catch (e) {
                     this.display.appendError(e.toString(), "%c{red}Validation failed! Please reload the level.");
 
@@ -266,14 +260,40 @@ export default class Game {
                 return result;
             }
         } catch (e) {
-            this.display.writeStatus(e.toString());
+            //this.display.writeStatus(e.toString());
             console.log(e);
             // throw e; // for debugging
             if (throwExceptions) {
+                this.display.writeStatus(e.toString());
                 throw e;
             }
         }
     };
+
+    // detectTampering (map, player) {
+    //     // once the super menu is activated, we don't care anymore!
+    //     if (this._superMenuActivated) {
+    //         return;
+    //     }
+    
+    //     for (f in this.referenceImplementations.map) {
+    //         if (this.referenceImplementations.map.hasOwnProperty(f)) {
+    //             if (this.referenceImplementations.map[f].toString() != map[f].toString()) {
+    //                 throw (f + '() has been tampered with!');
+    //             }
+    //         }
+    //     }
+    
+    //     if (player) {
+    //         for (f in this.referenceImplementations.player) {
+    //             if (this.referenceImplementations.player.hasOwnProperty(f)) {
+    //                 if (this.referenceImplementations.player[f].toString() != player[f].toString()) {
+    //                     throw (f + '() has been tampered with!');
+    //                 }
+    //             }
+    //         }
+    //     }
+    // };
 
     evalLevelCode(allCode, playerCode, isNewLevel, restartingLevelFromScript) {
 
@@ -461,7 +481,8 @@ export default class Game {
             $('#helpPane, #notepadPane').hide();
             $('#menuPane').show();
         } else {
-            this.getLevel(this._currentLevel + 1, false, true);
+            //this.getLevel(this._currentLevel + 1, false, true);
+            this.app.levelComplete(this._currentLevel);
         }
     };
 
