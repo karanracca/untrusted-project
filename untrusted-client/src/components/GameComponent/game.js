@@ -13,13 +13,15 @@ class App extends Component {
         super();
         this.state = {
             inventory: [],
-            game: null
+            game: {},
+            showHelp: false
         }
     }
 
     componentDidMount() {
         window.ROT = ROT;
-        let startLevel = util.getParameterByName('lvl') ? parseInt(getParameterByName('lvl')) : null;
+        //let startLevel = util.getParameterByName('lvl') ? parseInt(getParameterByName('lvl')) : null;
+        let startLevel = JSON.parse(localStorage.getItem('currentPlayerLevel')).levelNo;
         let game = new Game(startLevel, "screen", this);
         this.setState({ game }, () => {
             //console.log(game);
@@ -51,6 +53,10 @@ class App extends Component {
         this.state.game.resetLevel(this.state.game._currentLevel);
     }
 
+    openHelp() {
+        this.setState({showHelp: true});
+    }
+
     render() {
         return (
             <div id="container">
@@ -79,9 +85,14 @@ class App extends Component {
                                     <span className="keys">^4</span> Reset
                                 </a>
                             </span>
+                            <span onClick={() => this.openHelp()}>
+                                <a id="helpButton" title="Ctrl+1: API Reference">
+                                    <span class="keys">^1</span> API
+                                </a>
+                            </span>
                         </div>
                     </div>
-                    {/* <HelpPane></HelpPane> */}
+                    {this.state.showHelp && this.state.game.helpCommands?<HelpPane help={this.state.game.helpCommands}></HelpPane>:null}
                 </div>
             </div>
         );

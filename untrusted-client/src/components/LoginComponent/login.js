@@ -21,18 +21,17 @@ export default class Login extends Component {
 
     handleSubmit(event) {
         event.preventDefault();
-        axios.post('http://localhost:63173/api/users/login', {
+        axios.post('http://localhost:63174/api/users/login', {
             username: this.state.username,
             password: this.state.password
         })
-            .then(response => {
-                console.log(response);
-                // axios.get('http://localhost:63174/api/level/getLevel', {
-                //     username: this.state.username,
-                //     password: this.state.password
-                // })
-                //this.props.history.push(`/game`);
-                console.log(response.data.username)
+            .then(response => {     
+                axios.get(`http://localhost:63174/api/level/${response.data.level}`).then(res => {
+                    console.log(res);
+                    localStorage.setItem('currentPlayer', JSON.stringify(response.data));
+                    localStorage.setItem('currentPlayerLevel', JSON.stringify(res.data));
+                    this.props.history.push(`/game`);
+                });
             })
             .catch(error => {
                 console.log(error);

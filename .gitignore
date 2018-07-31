@@ -1,2 +1,3 @@
 untrusted-client/node_modules
 untrusted-client/dist
+untrusted-server/untrustedServer/obj/Debug/netcoreapp2.0/untrustedServer.csproj.CoreCompileInputs.cache

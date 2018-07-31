@@ -7,6 +7,7 @@ import CodeEditor from './codeEditor';
 import RotDisplay from './rotDisplay';
 import ValidateCode from './validate';
 import Timer from 'timer.js';
+import axios from 'axios';
 
 export default class Game {
 
@@ -39,10 +40,10 @@ export default class Game {
         //this._playerPrototype = new Player; // to allow messing with map.js and player.js later
     }
 
-    get helpCommands() { return _commands; };
+    get helpCommands() { return this._commands; };
     get isPlayerCodeRunning() { return this._playerCodeRunning; };
     set _setPlayerCodeRunning(pcr) { this._playerCodeRunning = pcr };
-    
+
     initialize() {
         //TODO set from backend
         // Get last level reached from localStorage (if any)
@@ -95,12 +96,13 @@ export default class Game {
         // }
 
         // Lights, camera, action
-        if (this.startLevel) {
+        if (this.startLevel > 1) {
             this._currentLevel = this.startLevel - 1;
             this.getLevel(this.startLevel);
-        } else if (this._levelReached != 1) {
-            // load last level reached (unless it's the credits)
-            this.getLevel(Math.min(this._levelReached, 21));
+        // } else if (this._levelReached != 1) {
+        //     // load last level reached (unless it's the credits)
+        //     this.getLevel(Math.min(this._levelReached, 21));
+        // } 
         } else {
             this.display.playIntro(this.dimensions.height);
         }
@@ -153,6 +155,7 @@ export default class Game {
         game._currentFile = null;
 
         //TODO load level code in editor
+
         game.editor.loadCode(lvlCode);
 
         // restored saved state for this level?
@@ -191,7 +194,7 @@ export default class Game {
             // run the callback and check for forbidden method calls
             try {
                 if (!ignoreForbiddenCalls) {
-                    this._setPlayerCodeRunning = true ;
+                    this._setPlayerCodeRunning = true;
                 }
                 var result = callback();
                 this._setPlayerCodeRunning = false;
@@ -275,7 +278,7 @@ export default class Game {
     //     if (this._superMenuActivated) {
     //         return;
     //     }
-    
+
     //     for (f in this.referenceImplementations.map) {
     //         if (this.referenceImplementations.map.hasOwnProperty(f)) {
     //             if (this.referenceImplementations.map[f].toString() != map[f].toString()) {
@@ -283,7 +286,7 @@ export default class Game {
     //             }
     //         }
     //     }
-    
+
     //     if (player) {
     //         for (f in this.referenceImplementations.player) {
     //             if (this.referenceImplementations.player.hasOwnProperty(f)) {
@@ -464,7 +467,7 @@ export default class Game {
     //     }
     // };
 
-    _moveToNextLevel () {
+    _moveToNextLevel() {
         // is the player permitted to exit?
         if (typeof this.onExit === 'function' && !this.onExit(this.map)) {
             this.sound.playSound('blip');
@@ -533,7 +536,7 @@ export default class Game {
     //     }, 'text');
     // };
 
-    resetLevel (level) {
+    resetLevel(level) {
         let game = this;
         let resetTimeout_msec = 2500;
 
