@@ -6,6 +6,7 @@ import './game.css';
 import 'codemirror/theme/vibrant-ink.css';
 import 'codemirror/lib/codemirror.css';
 import HelpPane from '../HelpComponent/helpPane';
+import axios from 'axios';
 
 class App extends Component {
 
@@ -16,6 +17,7 @@ class App extends Component {
             game: {},
             showHelp: false
         }
+        //this.closeHelp.bind(this);
     }
 
     componentDidMount() {
@@ -34,9 +36,13 @@ class App extends Component {
     }
 
     levelComplete(currentLevel) {
-        //this.getLevel(this._currentLevel + 1, false, true); just temp refrence
-        this.state.game.getLevel(currentLevel + 1, false, true);
-        console.log(`Level ${currentLevel} complete, moving to ${currentLevel + 1} level`);
+        axios.post('http://localhost:63174/api/users/updateStats',
+            JSON.parse(localStorage.getItem('currentPlayer'))).then(res => {
+                localStorage.setItem('currentPlayer', JSON.stringify(res.data));
+                this.state.game.getLevel(res.data.level, false, true);
+                console.log(`Level ${currentLevel} complete, moving to ${currentLevel + 1} level`);
+            });
+        //this.getLevel(this._currentLevel + 1, false, true); just temp refrence 
     }
 
     drawInventory(item) {
@@ -54,7 +60,11 @@ class App extends Component {
     }
 
     openHelp() {
-        this.setState({showHelp: true});
+        this.setState({ showHelp: true });
+    }
+
+    closeHelp() {
+        this.setState({ showHelp: false });
     }
 
     render() {
@@ -87,12 +97,12 @@ class App extends Component {
                             </span>
                             <span onClick={() => this.openHelp()}>
                                 <a id="helpButton" title="Ctrl+1: API Reference">
-                                    <span class="keys">^1</span> API
+                                    <span className="keys">^1</span> API
                                 </a>
                             </span>
                         </div>
                     </div>
-                    {this.state.showHelp && this.state.game.helpCommands?<HelpPane help={this.state.game.helpCommands}></HelpPane>:null}
+                    {this.state.showHelp && this.state.game.helpCommands ? <HelpPane help={this.state.game.helpCommands} close={this.closeHelp.bind(this)}></HelpPane> : null}
                 </div>
             </div>
         );

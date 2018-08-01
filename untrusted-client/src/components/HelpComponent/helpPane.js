@@ -8,6 +8,7 @@ class HelpPane extends Component {
         super();
         this.state = {
             reference: Reference,
+            commandList: [],
             categories: [],
             commands:[]
         }
@@ -15,21 +16,27 @@ class HelpPane extends Component {
 
     static getDerivedStateFromProps(props, state) {
         let categories = [];
+        let cl = [];
         props.help.map((command) => {
             let commandRef = state.reference[command];
-
+            cl.push(commandRef);
             if (categories.indexOf(commandRef.category) == -1) {
                 categories.push(commandRef.category);
             }
-
         });
         return {
-            categories: categories
+            categories: categories,
+            commandList: cl
         }
     }
 
     getCommands(cat) {
-        let commands = this.props.help.filter(item => item.category === cat);
+        let commands = this.state.commandList.filter(item => item.category === cat);
+        this.setState({commands});
+    }
+
+    close() {
+        this.props.close();
     }
 
     render() {
@@ -57,7 +64,7 @@ class HelpPane extends Component {
                     </div>:null}
                     
                 </div>
-                <div id="helpPaneCloseButton">x</div>
+                <div id="helpPaneCloseButton" onClick={() => this.close()}>x</div>
             </div>
         );
     }
