@@ -74,3 +74,11 @@ export const verbotenWords = [
     'validate', 'onExit', 'objective', // don't let players rewrite these methods
     'this[' // prevents this['win'+'dow'], etc.
 ];
+
+const BaseAPI = "http://localhost:63174/api";
+
+export const API = {
+    login: `${BaseAPI}/users/login`,
+    level: `${BaseAPI}/level`,
+    leaderboard: `${BaseAPI}/users/leaderBoard`
+}

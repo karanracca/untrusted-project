@@ -7,6 +7,7 @@ import 'codemirror/theme/vibrant-ink.css';
 import 'codemirror/lib/codemirror.css';
 import HelpPane from '../HelpComponent/helpPane';
 import axios from 'axios';
+import Leaderboard from "../LeaderboardComponent/leaderboard";
 
 class App extends Component {
 
@@ -15,9 +16,9 @@ class App extends Component {
         this.state = {
             inventory: [],
             game: {},
-            showHelp: false
+            showHelp: false,
+            showLeaderboard: false
         }
-        //this.closeHelp.bind(this);
     }
 
     componentDidMount() {
@@ -67,6 +68,14 @@ class App extends Component {
         this.setState({ showHelp: false });
     }
 
+    openLeaderboard() {
+        this.setState({showLeaderboard: true})
+    }
+
+    closeLeaderboard() {
+        this.setState({ showLeaderboard: false });
+    }
+
     render() {
         return (
             <div id="container">
@@ -100,9 +109,17 @@ class App extends Component {
                                     <span className="keys">^1</span> API
                                 </a>
                             </span>
+
+                            <span onClick={() => this.openLeaderboard()}>
+                                <a id="helpButton" title="Ctrl+1: API Reference">
+                                    <span className="keys">^2</span> Leaderboard
+                                </a>
+                            </span>
                         </div>
                     </div>
                     {this.state.showHelp && this.state.game.helpCommands ? <HelpPane help={this.state.game.helpCommands} close={this.closeHelp.bind(this)}></HelpPane> : null}
+
+                    {this.state.showLeaderboard ? <Leaderboard close={this.closeLeaderboard.bind(this)}></Leaderboard> : null}
                 </div>
             </div>
         );
