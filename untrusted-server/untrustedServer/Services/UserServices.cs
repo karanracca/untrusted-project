@@ -39,15 +39,11 @@ namespace untrustedServer.Services
 
             if (users.Exists(u => u.username == user.username))
             {
-                return new NotFoundObjectResult("Username already exist");
-            }
-            else if (users.Exists(u => u.email == user.email))
-            {
-                return new NotFoundObjectResult("Email already exist");
+                return new BadRequestObjectResult("Username already exist");
             }
             else
             {
-                mongoCollection.InsertOne(new User(user.username, user.password, user.firstName, user.lastName, user.email, user.phone));
+                mongoCollection.InsertOne(new User(user.username, user.password, user.fullname));
                 return new OkObjectResult("User Created");
             }
 
@@ -55,7 +51,13 @@ namespace untrustedServer.Services
 
         public User login(string username, string password)
         {
-            return GetUsers().Find(u => u.username == username && u.password == password);
+            var filter = Builders<User>.Filter.And(Builders<User>.Filter.Eq("username", username), Builders<User>.Filter.Eq("password", username));
+            IFindFluent<User, User> findFluent = mongoCollection.Find(filter);
+            if (findFluent.CountDocuments() != 0)
+            {
+                return findFluent.First();
+            }
+            return null;
         }
 
         public User UpdateStats(User user)

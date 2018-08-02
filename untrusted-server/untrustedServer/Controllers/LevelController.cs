@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 using untrustedServer.Models;
 using untrustedServer.Services;
 using Microsoft.AspNetCore.Cors;
+using Microsoft.IdentityModel.Tokens;
 
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
@@ -16,7 +17,9 @@ namespace untrustedServer.Controllers
     {
 
         LevelService ls = new LevelService();
+        TokenService ts = new TokenService();
         
+        // For configuration use only. not to be used from client side
         [HttpPost]
         [Route("api/[controller]/[action]")]
         [ActionName("CreateLevel")]
@@ -29,12 +32,19 @@ namespace untrustedServer.Controllers
         [Route("api/[controller]/{number}")]
         public IActionResult GetLevel(int number)
         {
-            Level level = ls.getlevel(number);
-            if(level == null)
+            if (ts.validateToken(this.Request, out SecurityToken securityToken))
             {
-                return NotFound();
+                Level level = ls.getlevel(number);
+                if (level == null)
+                {
+                    return base.NotFound();
+                }
+                return base.Ok(level);
             }
-            return Ok(level);
+            else
+            {
+                return base.Unauthorized();
+            }
         }
 
     }
