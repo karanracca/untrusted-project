@@ -4,6 +4,7 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
 using untrustedServer.Models;
@@ -14,6 +15,7 @@ namespace untrustedServer.Controllers
 {
 
     [Route("api/[controller]")]
+    [EnableCors("AllowAnyOrigin")]
     public class LoginController : Controller
     {
 
@@ -29,7 +31,7 @@ namespace untrustedServer.Controllers
                 return base.NotFound();
             }
             string token = ts.createToken(user);
-            return base.Ok(new { token, user });
+            return base.Ok(new { token, user.fullname,user.score,user.level.levelNo,user.level.levelName,user.level.layout });
         }
         
     }

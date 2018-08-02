@@ -46,6 +46,7 @@ namespace untrustedServer
             }
             catch (SecurityTokenValidationException e)
             {
+
                 return false;
             }
             catch (Exception ex)
@@ -82,7 +83,7 @@ namespace untrustedServer
             //Set issued at date
             DateTime issuedAt = DateTime.UtcNow;
             //set the time when it expires
-            DateTime expires = DateTime.UtcNow.AddDays(7);
+            DateTime expires = DateTime.UtcNow.AddHours(1);
 
             //http://stackoverflow.com/questions/18223868/how-to-encrypt-jwt-security-token
             var tokenHandler = new JwtSecurityTokenHandler();
@@ -106,6 +107,14 @@ namespace untrustedServer
             var tokenString = tokenHandler.WriteToken(token);
 
             return tokenString;
+        }
+
+        public User getUserFromToken(SecurityToken securityToken)
+        {
+            JwtSecurityToken jwtSecurityToken = securityToken as JwtSecurityToken;
+            string value = jwtSecurityToken.Claims.First(claims => claims.Type.Equals("User")).Value;
+            User user = JsonConvert.DeserializeObject<User>(value);
+            return user;
         }
     }
 }

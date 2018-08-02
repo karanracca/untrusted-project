@@ -7,6 +7,8 @@ using untrustedServer.Models;
 using untrustedServer.Services;
 using Microsoft.AspNetCore.Cors;
 using Microsoft.IdentityModel.Tokens;
+using System.IdentityModel.Tokens.Jwt;
+using Newtonsoft.Json;
 
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
@@ -15,7 +17,7 @@ namespace untrustedServer.Controllers
     [EnableCors("AllowAnyOrigin")]
     public class LevelController : Controller
     {
-
+        UserServices us = new UserServices();
         LevelService ls = new LevelService();
         TokenService ts = new TokenService();
         
@@ -29,21 +31,45 @@ namespace untrustedServer.Controllers
         }
 
         [HttpGet]
-        [Route("api/[controller]/{number}")]
-        public IActionResult GetLevel(int number)
+        [Route("api/[controller]")]
+        public IActionResult GetLevel()
         {
             if (ts.validateToken(this.Request, out SecurityToken securityToken))
             {
-                Level level = ls.getlevel(number);
+                User user = ts.getUserFromToken(securityToken);
+                Level level = ls.getlevel(user.level.levelNo);
                 if (level == null)
                 {
                     return base.NotFound();
                 }
-                return base.Ok(level);
+                return base.Ok(new { level.levelNo, level.levelName, level.layout });
             }
             else
             {
                 return base.Unauthorized();
+            }
+        }
+
+        [HttpGet]
+        [Route("api/[controller]/[action]")]
+        [ActionName("UpdateLevel")]
+        public IActionResult UpdateLevel()
+        {
+            if (ts.validateToken(this.Request, out SecurityToken securityToken))
+            {
+                User user = ts.getUserFromToken(securityToken);
+                user = us.UpdateStats(user);
+                if (user == null)
+                {
+                    return NotFound();
+                }
+                string token = ts.createToken(user);
+                user.level = ls.getlevel(user.level.levelNo);
+                return base.Ok(new { token, user.fullname, user.score, user.level.levelNo,user.level.levelName,user.level.layout });
+            }
+            else
+            {
+                return Unauthorized();
             }
         }
 
