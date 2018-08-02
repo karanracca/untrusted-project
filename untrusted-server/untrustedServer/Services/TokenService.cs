@@ -7,11 +7,14 @@ using System.Linq;
 using Newtonsoft.Json;
 using untrustedServer.Models;
 using System.Security.Claims;
+using untrustedServer.Services;
 
 namespace untrustedServer
 {
     public class TokenService
     {
+        UserServices us = new UserServices();
+
         public bool validateToken(HttpRequest request,out SecurityToken securityToken)
         {
             string token;
@@ -91,7 +94,8 @@ namespace untrustedServer
             //create a identity and add claims to the user which we want to log in
             ClaimsIdentity claimsIdentity = new ClaimsIdentity(new[]
             {
-                new Claim("User", JsonConvert.SerializeObject(user))
+                new Claim("username", user.username),
+                new Claim("password", user.password)
             });
 
             const string sec = "401b09eab3c013d4ca54922bb802bec8fd5318192b0a75f201d8b3727429090fb337591abd3e44453b954555b7a0812e1081c39b740293f765eae731f5a65ed1";
@@ -112,8 +116,9 @@ namespace untrustedServer
         public User getUserFromToken(SecurityToken securityToken)
         {
             JwtSecurityToken jwtSecurityToken = securityToken as JwtSecurityToken;
-            string value = jwtSecurityToken.Claims.First(claims => claims.Type.Equals("User")).Value;
-            User user = JsonConvert.DeserializeObject<User>(value);
+            string username = jwtSecurityToken.Claims.First(claims => claims.Type.Equals("username")).Value;
+            string password = jwtSecurityToken.Claims.First(claims => claims.Type.Equals("password")).Value;
+            User user = us.login(username, password);
             return user;
         }
     }
