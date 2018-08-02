@@ -15,6 +15,8 @@ namespace untrustedServer.Services
         IMongoDatabase _db;
         IMongoCollection<User> mongoCollection;
 
+        LevelService ls = new LevelService();
+
         public UserServices()
         {
             _client = new MongoClient("mongodb://admin:password12@ds255451.mlab.com:55451/mongo");
@@ -24,7 +26,12 @@ namespace untrustedServer.Services
 
         public List<User> GetUsers()
         {
-            return mongoCollection.Find(new BsonDocument()).ToList();
+            IFindFluent<User, User> findFluent = mongoCollection.Find(new BsonDocument());
+            if(findFluent.CountDocuments() == 0)
+            {
+                return new List<User>();
+            }
+            return findFluent.ToList();
         }
 
         public User GetUser(ObjectId id)
@@ -63,8 +70,9 @@ namespace untrustedServer.Services
         public User UpdateStats(User user)
         {
             var filter = Builders<User>.Filter.Eq("username", user.username);
-            int updatedLevel = user.level + 1;
-            int updatedScore = user.score + (10 * updatedLevel);
+            int newLevelNo = user.level.levelNo + 1;
+            Level updatedLevel = ls.getlevel(newLevelNo);   
+            int updatedScore = user.score + (10 * newLevelNo);
             var update = Builders<User>.Update.Set("level", updatedLevel).Set("score", updatedScore);
             UpdateResult updateResult = mongoCollection.UpdateOne(filter, update);
             if (updateResult.IsAcknowledged)

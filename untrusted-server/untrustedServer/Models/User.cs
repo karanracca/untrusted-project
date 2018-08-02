@@ -4,11 +4,13 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using untrustedServer.Services;
 
 namespace untrustedServer.Models
 {
     public class User
     {
+        LevelService ls = new LevelService();
 
         public ObjectId _id { get; set; }
 
@@ -25,13 +27,14 @@ namespace untrustedServer.Models
         public int score { get; set; } = 0;
 
         [BsonElement("level")]
-        public int level { get; set; } = 1;
+        public Level level { get; set; }
 
         public User(string username, string password, string fullname)
         {
             this.username = username;
             this.password = password;
             this.fullname = fullname;
+            level = ls.getlevel(1);
         }
 
         public User()

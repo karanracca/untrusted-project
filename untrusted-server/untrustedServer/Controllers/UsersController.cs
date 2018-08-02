@@ -26,7 +26,7 @@ namespace untrustedServer.Controllers
         {
             if (ts.validateToken(this.Request, out SecurityToken securityToken))
             {
-                return base.Ok(us.GetUsers());
+                return base.Ok(us.GetUsers().Select(user=> new { user.fullname,user.score,user.level.levelNo,user.level.levelName,user.level.layout}));
             }
             else
             {
@@ -58,7 +58,7 @@ namespace untrustedServer.Controllers
                 {
                     return base.NotFound();
                 }
-                return base.Ok(users.Select(user => new Stats(user.fullname,user.score, user.level)).OrderByDescending(stats => stats.score));
+                return base.Ok(users.Select(user => new Stats(user.fullname,user.score, user.level.levelNo)).OrderByDescending(stats => stats.score));
             }
             else
             {
@@ -66,36 +66,6 @@ namespace untrustedServer.Controllers
             }
         }
 
-        [HttpPost]
-        [Route("api/[controller]/[action]")]
-        [ActionName("UpdateStats")]
-        public IActionResult UpdateStats()
-        {
-            if (ts.validateToken(this.Request,out SecurityToken securityToken))
-            {
-                User user = getUserFromToken(securityToken);
-                user = us.UpdateStats(user);
-                if (user == null)
-                {
-                    return NotFound();
-                }
-                string token = ts.createToken(user);
-                Level level = ls.getlevel(user.level);
-                return base.Ok(new {token, level });
-            }
-            else
-            {
-                return Unauthorized();
-            }
-        }
-
-
-        private User getUserFromToken(SecurityToken securityToken)
-        {
-            JwtSecurityToken jwtSecurityToken = securityToken as JwtSecurityToken;
-            string value = jwtSecurityToken.Claims.First(claims => claims.Type.Equals("User")).Value;
-            User user = JsonConvert.DeserializeObject<User>(value);
-            return user;
-        }
+       
     }
 }

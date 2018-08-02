@@ -28,7 +28,7 @@ export default class Register extends Component {
         if (this.state.username === "" || this.state.password === "" || this.state.confirmPassword === "" || this.state.fullname === "") {
             return;
         }
-        axios.post(`${API.register}`, {
+        API.post(`/users/createUser`, {
             username: this.state.username,
             password: this.state.password,
             fullname: this.state.fullname,
