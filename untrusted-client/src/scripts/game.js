@@ -106,9 +106,8 @@ export default class Game {
     };
 
     start(lvl) {
-        //TODO ask level from server
-        this.getLevel(lvl ? lvl : 1);
-    };
+        this.getLevel(lvl? lvl :this.startLevel );
+    }
 
     // makes an ajax request to get the level text file and then loads it into the game
     getLevel(levelNum, isResetting, movingToNextLevel) {
