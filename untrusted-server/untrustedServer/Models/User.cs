@@ -18,17 +18,8 @@ namespace untrustedServer.Models
         [BsonElement("password")]
         public string password { get; set; }
 
-        [BsonElement("firstName")]
-        public string firstName { get; set; }
-
-        [BsonElement("lastName")]
-        public string lastName { get; set; }
-
-        [BsonElement("email")]
-        public string email { get; set; }
-
-        [BsonElement("phone")]
-        public string phone { get; set; }
+        [BsonElement("fullname")]
+        public string fullname { get; set; }
 
         [BsonElement("score")]
         public int score { get; set; } = 0;
@@ -36,14 +27,11 @@ namespace untrustedServer.Models
         [BsonElement("level")]
         public int level { get; set; } = 1;
 
-        public User(string username, string password, string firstName, string lastName, string email, string phone)
+        public User(string username, string password, string fullname)
         {
             this.username = username;
             this.password = password;
-            this.firstName = firstName;
-            this.lastName = lastName;
-            this.email = email;
-            this.phone = phone;
+            this.fullname = fullname;
         }
 
         public User()

@@ -39,15 +39,11 @@ namespace untrustedServer.Services
 
             if (users.Exists(u => u.username == user.username))
             {
-                return new NotFoundObjectResult("Username already exist");
-            }
-            else if (users.Exists(u => u.email == user.email))
-            {
-                return new NotFoundObjectResult("Email already exist");
+                return new BadRequestObjectResult("Username already exist");
             }
             else
             {
-                mongoCollection.InsertOne(new User(user.username, user.password, user.firstName, user.lastName, user.email, user.phone));
+                mongoCollection.InsertOne(new User(user.username, user.password, user.fullname));
                 return new OkObjectResult("User Created");
             }
 

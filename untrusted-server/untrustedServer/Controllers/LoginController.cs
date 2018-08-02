@@ -23,11 +23,6 @@ namespace untrustedServer.Controllers
         [HttpPost]
         public IActionResult Login([FromBody] Login login)
         {
-            if (string.IsNullOrEmpty(login.username) || string.IsNullOrEmpty(login.password))
-            {
-                return base.BadRequest();
-            }
-
             User user = us.login(login.username, login.password);
             if (user == null)
             {

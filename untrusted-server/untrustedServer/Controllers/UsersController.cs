@@ -41,7 +41,7 @@ namespace untrustedServer.Controllers
         {
             if (user == null)
             {
-                return new BadRequestResult();
+                return base.BadRequest("Enter all details");
             }
             return us.CreateUser(user);
         }
@@ -58,7 +58,7 @@ namespace untrustedServer.Controllers
                 {
                     return base.NotFound();
                 }
-                return base.Ok(users.Select(user => new Stats(user.firstName, user.lastName, user.score, user.level)).OrderByDescending(stats => stats.score));
+                return base.Ok(users.Select(user => new Stats(user.fullname,user.score, user.level)).OrderByDescending(stats => stats.score));
             }
             else
             {
