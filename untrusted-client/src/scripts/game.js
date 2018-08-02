@@ -1,13 +1,10 @@
 import Player from './player';
-import ROT from './rot';
 import GameMap from './map';
 import * as util from './util';
 import * as config from './config';
 import CodeEditor from './codeEditor';
 import RotDisplay from './rotDisplay';
 import ValidateCode from './validate';
-import Timer from 'timer.js';
-import axios from 'axios';
 
 export default class Game {
 
@@ -17,7 +14,6 @@ export default class Game {
         this.display = null;
         this.domElement = domElement;
         this.inventory = [];
-        /* private properties */
         this._currentCode = '';
         this._commands = [];
         this._playerCodeRunning = false;
@@ -37,7 +33,6 @@ export default class Game {
         this._levelReached = 1;
         this._displayedChapters = [];
         this._eval = window.eval;// store our own copy of eval so that we can override window.eval
-        //this._playerPrototype = new Player; // to allow messing with map.js and player.js later
     }
 
     get helpCommands() { return this._commands; };
@@ -45,21 +40,8 @@ export default class Game {
     set _setPlayerCodeRunning(pcr) { this._playerCodeRunning = pcr };
 
     initialize() {
-        //TODO set from backend
-        // Get last level reached from localStorage (if any)
         let levelKey = this._mod.length == 0 ? 'levelReached' : this._mod + '.levelReached';
-        this._levelReached = parseInt(localStorage.getItem(levelKey)) || 1;
-
-        // // Fix potential corruption
-        // // levelReached may be "81111" instead of "8" due to bug
-        // if (this._levelReached > this._levelFileNames.length) {
-        //     for (var l = 1; l <= this._levelFileNames.length; l++) {
-        //         if (!localStorage[this._getLocalKey("level" + l + ".lastGoodState")]) {
-        //             this._levelReached = l - 1;
-        //             break;
-        //         }
-        //     }
-        // }
+        this._levelReached = JSON.parse(localStorage.getItem('currentPlayerLevel')).levelNo;
 
         // Initialize sound
         // this.sound = new Sound('local');
@@ -77,7 +59,7 @@ export default class Game {
         //this.objects = this.getListOfObjects();
 
         // Initialize validator
-        //this.saveReferenceImplementations(); // prevents tampering with methods
+        this.saveReferenceImplementations(); // prevents tampering with methods
         //this._globalVars = []; // keep track of current global variables
         // for (p in window) {
         //     if (window.propertyIsEnumerable(p)) {
@@ -196,7 +178,7 @@ export default class Game {
                 if (!ignoreForbiddenCalls) {
                     this._setPlayerCodeRunning = true;
                 }
-                var result = callback();
+                let result = callback();
                 this._setPlayerCodeRunning = false;
             } catch (e) {
                 // cleanup
@@ -205,8 +187,8 @@ export default class Game {
                 if (e.toString().indexOf("Forbidden method call") > -1) {
                     // display error, disable player movement
                     this.display.appendError(e.toString(), "%c{red}Please reload the level.");
-                    this.sound.playSound('static');
-                    this.map.getPlayer()._canMove = false;
+                    //this.sound.playSound('static');
+                    this.map.player._canMove = false;
                     this.map._callbackValidationFailed = true;
 
                     // throw e; // for debugging
@@ -227,12 +209,11 @@ export default class Game {
                 this.display.appendError(e.toString(), "%c{red}Validation failed! Please reload the level.");
 
                 // play error sound
-                this.sound.playSound('static');
+                //this.sound.playSound('static');
 
                 // disable player movement
-                this.map.getPlayer()._canMove = false;
+                this.map.player._canMove = false;
                 this.map._callbackValidationFailed = true;
-
                 return;
             }
 
@@ -246,20 +227,15 @@ export default class Game {
                     this.detectTampering(this.map, this.map.player);
                 } catch (e) {
                     this.display.appendError(e.toString(), "%c{red}Validation failed! Please reload the level.");
-
                     // play error sound
-                    this.sound.playSound('static');
-
+                    //this.sound.playSound('static');
                     // disable player movement
-                    this.map.getPlayer()._canMove = false;
+                    this.map.player._canMove = false;
                     this.map._callbackValidationFailed = true;
-
                     return;
                 }
-
                 // refresh the map, just in case
                 this.map.refresh();
-
                 return result;
             }
         } catch (e) {
@@ -273,35 +249,51 @@ export default class Game {
         }
     };
 
-    // detectTampering (map, player) {
-    //     // once the super menu is activated, we don't care anymore!
-    //     if (this._superMenuActivated) {
-    //         return;
-    //     }
+    saveReferenceImplementations () {
+        for (let f in config.referenceImplementations.map) {
+            if (config.referenceImplementations.map.hasOwnProperty(f)) {
+                config.referenceImplementations.map[f] = this.map[f];
+            }
+        }
+    
+        let dummyPlayer = new Player(0, 0, this.map, this);
+        for (let f in config.referenceImplementations.player) {
+            if (config.referenceImplementations.player.hasOwnProperty(f)) {
+                config.referenceImplementations.player[f] = dummyPlayer[f];
+            }
+        }
+    };
 
-    //     for (f in this.referenceImplementations.map) {
-    //         if (this.referenceImplementations.map.hasOwnProperty(f)) {
-    //             if (this.referenceImplementations.map[f].toString() != map[f].toString()) {
-    //                 throw (f + '() has been tampered with!');
-    //             }
-    //         }
-    //     }
+    detectTampering (map, player) {
+        // once the super menu is activated, we don't care anymore!
+        // if (this._superMenuActivated) {
+        //     return;
+        // }
 
-    //     if (player) {
-    //         for (f in this.referenceImplementations.player) {
-    //             if (this.referenceImplementations.player.hasOwnProperty(f)) {
-    //                 if (this.referenceImplementations.player[f].toString() != player[f].toString()) {
-    //                     throw (f + '() has been tampered with!');
-    //                 }
-    //             }
-    //         }
-    //     }
-    // };
+        for (let f in config.referenceImplementations.map) {
+            if (config.referenceImplementations.map.hasOwnProperty(f) && map[f]) {
+                if (config.referenceImplementations.map[f].toString() != map[f].toString()) {
+                    throw (f + '() has been tampered with!');
+                }
+            }
+        }
+
+        if (player) {
+            for ( let f in config.referenceImplementations.player) {
+                if (config.referenceImplementations.player.hasOwnProperty(f) && player[f]) {
+                    if (config.referenceImplementations.player[f].toString() != player[f].toString()) {
+                        throw (f + '() has been tampered with!');
+                    }
+                }
+            }
+        }
+    };
 
     evalLevelCode(allCode, playerCode, isNewLevel, restartingLevelFromScript) {
 
         let game = this;
 
+        try {
         // by default, get code from the editor
         let loadedFromEditor = false;
         if (!allCode) {
@@ -393,6 +385,39 @@ export default class Game {
             // disable player movement
             this.map.player._canMove = false;
         }
+    } catch (e) {
+        console.log(e);
+        // cleanup
+        this._setPlayerCodeRunning = false;
+
+        // disable player movement
+        this.map.player._canMove = false;
+        
+        let exceptionText = e.toString();
+        if (e instanceof SyntaxError) {
+           var lineNum = this.findSyntaxError(allCode, e.message);
+            if (lineNum) {
+                exceptionText = "[Line " + lineNum + "] " + exceptionText;
+            }
+        }
+        this.display.appendError(exceptionText);
+    }
+    };
+
+    findSyntaxError (code, errorMsg) {
+        let lines = code.split('\n');
+        for (let i = 1; i <= lines.length; i++) {
+            let testCode = lines.slice(0, i).join('\n');
+    
+            try {
+                window.eval(testCode);
+            } catch (e) {
+                if (e.message === errorMsg) {
+                    return i;
+                }
+            }
+        }
+        return null;
     };
 
     addToInventory(itemName) {

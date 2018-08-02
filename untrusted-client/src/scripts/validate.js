@@ -31,13 +31,12 @@ export default function Validate(allCode, playerCode, restartingLevelFromScript,
 
         // evaluate the code to get startLevel() and (opt) validateLevel() methods
         //this._eval(allCode);
-        
         window.eval(allCode);
 
-        // // start the level on a dummy map to validate
-        // game._setPlayerCodeRunning = true;
-        // window.startLevel(dummyMap);
-        // game._setPlayerCodeRunning = false;
+        // start the level on a dummy map to validate
+        game._setPlayerCodeRunning = true;
+        window.startLevel(dummyMap);
+        game._setPlayerCodeRunning = false;
 
         // // re-run to check if the player messed with startLevel
         // game._startOfStartLevelReached = false;
@@ -57,12 +56,12 @@ export default function Validate(allCode, playerCode, restartingLevelFromScript,
         // // has the player tampered with any functions?
         // this.detectTampering(dummyMap, dummyMap.getPlayer());
 
-        // this.validateLevel = function () { return true; };
-        // // does validateLevel() succeed?
-        // if (typeof(validateLevel) === "function") {
-        //     this.validateLevel = validateLevel;
-        //     validateLevel(dummyMap);
-        // }
+        //this.validateLevel = function () { return true; };
+        // does validateLevel() succeed?
+        if (typeof(window.validateLevel) === "function") {
+            //this.validateLevel = validateLevel;
+            window.validateLevel(dummyMap);
+        }
 
         // this.onExit = function () { return true; };
         // if (typeof onExit === "function") {
@@ -76,21 +75,6 @@ export default function Validate(allCode, playerCode, restartingLevelFromScript,
 
         return window.startLevel;
     } catch (e) {
-        // cleanup
-        //this._setPlayerCodeRunning(false);
-
-        // var exceptionText = e.toString();
-        // if (e instanceof SyntaxError) {
-        //     var lineNum = this.findSyntaxError(allCode, e.message);
-        //     if (lineNum) {
-        //         exceptionText = "[Line " + lineNum + "] " + exceptionText;
-        //     }
-        // }
-        // this.display.appendError(exceptionText);
-
-        console.log(e);
-
-        // throw e; // for debugging
-        return null;
+        throw e;
     }
 };

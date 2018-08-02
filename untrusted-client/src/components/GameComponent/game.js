@@ -17,19 +17,17 @@ class App extends Component {
             inventory: [],
             game: {},
             showHelp: false,
-            showLeaderboard: false
+            showLeaderboard: false,
+            user: localStorage.getItem('currentPlayer') ? JSON.parse(localStorage.getItem('currentPlayer')) : null
         }
     }
 
     componentDidMount() {
         window.ROT = ROT;
-        //let startLevel = util.getParameterByName('lvl') ? parseInt(getParameterByName('lvl')) : null;
         let startLevel = JSON.parse(localStorage.getItem('currentPlayerLevel')).levelNo;
         let game = new Game(startLevel, "screen", this);
         this.setState({ game }, () => {
-            //console.log(game);
             this.state.game.initialize();
-            //this.state.game.start(1);
             // contentEditable is required for canvas elements to detect keyboard events
             this.state.game.display.getContainer().setAttribute("contentEditable", "true");
             document.getElementById("screen").appendChild(this.state.game.display.getContainer());
@@ -69,15 +67,32 @@ class App extends Component {
     }
 
     openLeaderboard() {
-        this.setState({showLeaderboard: true})
+        this.setState({ showLeaderboard: true })
     }
 
     closeLeaderboard() {
         this.setState({ showLeaderboard: false });
     }
 
+    logout() {
+        this.props.history.push('/login');
+    }
+
     render() {
-        return (
+        return (<div>
+            {this.state.user !== null ?
+                <div className="welcome-user">
+                    <span>Hi, {this.state.user.firstName}</span>
+                </div> : null}
+
+
+            <div className="main-title">
+                <span>Hack The Maze!</span>
+            </div>
+            {this.state.user !== null ? <div>
+                <span className="user-level">Level- {this.state.user.level}</span>
+                <span className="user-score">Score- {this.state.user.score}</span>
+            </div>: null}
             <div id="container">
                 <div id="panes">
                     <div id="screenPane">
@@ -122,7 +137,8 @@ class App extends Component {
                     {this.state.showLeaderboard ? <Leaderboard close={this.closeLeaderboard.bind(this)}></Leaderboard> : null}
                 </div>
             </div>
-        );
+            <span onClick={() => { this.logout() }} className="logout-btn"><a>Logout</a></span>
+        </div>);
     }
 }
 

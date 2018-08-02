@@ -22,6 +22,7 @@ export default class Login extends Component {
 
     handleSubmit(event) {
         event.preventDefault();
+        if (this.state.username === '' && this.state.password === '') return;
         axios.post(API.login, {
             username: this.state.username,
             password: this.state.password
