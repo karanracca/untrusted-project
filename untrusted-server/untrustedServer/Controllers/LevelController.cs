@@ -57,15 +57,17 @@ namespace untrustedServer.Controllers
         {
             if (ts.validateToken(this.Request, out SecurityToken securityToken))
             {
-                User user = ts.getUserFromToken(securityToken);
-                user = us.UpdateStats(user);
-                if (user == null)
+                User loggedInUser = ts.getUserFromToken(securityToken);
+                loggedInUser = us.UpdateStats(loggedInUser);
+                if (loggedInUser == null)
                 {
                     return NotFound();
                 }
-                string token = ts.createToken(user);
-                user.level = ls.getlevel(user.level.levelNo);
-                return base.Ok(new { token, user.fullname, user.score, user.level.levelNo,user.level.levelName,user.level.layout });
+                string token = ts.createToken(loggedInUser);
+                var level = new { loggedInUser.level.levelNo, loggedInUser.level.levelName, loggedInUser.level.layout };
+                var user = new { loggedInUser.fullname, loggedInUser.score, level };
+                var response = new { token, user };
+                return base.Ok(response);
             }
             else
             {
