@@ -1,6 +1,0 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
-<parameters>
-  <parameter name="IIS Web Application Name" description="" value="untrusted-server" tags="IisApp">
-    <parameterEntry kind="ProviderPath" scope="IisApp" match="^E:\\Final\ Project\ Git\ Repo\\untrusted-project\\untrusted-server\\untrustedServer\\obj\\Release\\netcoreapp2\.0\\PubTmp\\Out\\$" />
-  </parameter>
-</parameters>
