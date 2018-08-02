@@ -8,11 +8,12 @@ using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
 using untrustedServer.Models;
 using untrustedServer.Services;
+using Microsoft.AspNetCore.Cors;
 
 
 namespace untrustedServer.Controllers
 {
-
+    [EnableCors("AllowAnyOrigin")]
     [Route("api/[controller]")]
     public class LoginController : Controller
     {

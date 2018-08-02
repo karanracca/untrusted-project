@@ -22,11 +22,12 @@ export default class Login extends Component {
 
     handleSubmit(event) {
         event.preventDefault();
-        if (this.state.username === '' && this.state.password === '') return;
-        axios.post(API.login, {
+        if (this.state.username === '' || this.state.password === '') return;
+        API.post('/login', {
             username: this.state.username,
             password: this.state.password
         }).then(response => {
+            localStorage.setItem('token', response.data.token);
             axios.get(`${API.level}/${response.data.level}`).then(res => {
                 localStorage.setItem('currentPlayer', JSON.stringify(response.data));
                 localStorage.setItem('currentPlayerLevel', JSON.stringify(res.data));
