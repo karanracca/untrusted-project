@@ -41,7 +41,7 @@ export default class Game {
 
     initialize() {
         let levelKey = this._mod.length == 0 ? 'levelReached' : this._mod + '.levelReached';
-        this._levelReached = JSON.parse(localStorage.getItem('currentPlayerLevel')).levelNo;
+        this._levelReached = JSON.parse(localStorage.getItem('currentPlayer')).level.levelNo;
 
         // Initialize sound
         // this.sound = new Sound('local');

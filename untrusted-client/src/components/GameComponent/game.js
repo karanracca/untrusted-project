@@ -39,7 +39,7 @@ class App extends Component {
 
     levelComplete(currentLevel) {
         axios.get(APIUnused.updateLevel, config.requestOptions).then(response => {
-            localStorage.setItem('token', JSON.stringify(response.data.token));
+            localStorage.setItem('token', response.data.token);
             localStorage.setItem('currentPlayer', JSON.stringify(response.data.user));
             this.setState({user: JSON.parse(localStorage.getItem('currentPlayer'))})
                 
