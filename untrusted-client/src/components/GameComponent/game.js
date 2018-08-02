@@ -8,6 +8,9 @@ import 'codemirror/lib/codemirror.css';
 import HelpPane from '../HelpComponent/helpPane';
 import axios from 'axios';
 import Leaderboard from "../LeaderboardComponent/leaderboard";
+import { APIUnused } from '../../scripts/config';
+import * as config  from '../../scripts/config';
+
 
 class App extends Component {
 
@@ -24,7 +27,7 @@ class App extends Component {
 
     componentDidMount() {
         window.ROT = ROT;
-        let startLevel = JSON.parse(localStorage.getItem('currentPlayerLevel')).levelNo;
+        let startLevel = this.state.user.level.levelNo;
         let game = new Game(startLevel, "screen", this);
         this.setState({ game }, () => {
             this.state.game.initialize();
@@ -35,13 +38,14 @@ class App extends Component {
     }
 
     levelComplete(currentLevel) {
-        axios.post('http://localhost:63174/api/users/updateStats',
-            JSON.parse(localStorage.getItem('currentPlayer'))).then(res => {
-                localStorage.setItem('currentPlayer', JSON.stringify(res.data));
-                this.state.game.getLevel(res.data.level, false, true);
-                console.log(`Level ${currentLevel} complete, moving to ${currentLevel + 1} level`);
-            });
-        //this.getLevel(this._currentLevel + 1, false, true); just temp refrence 
+        axios.get(APIUnused.updateLevel, config.requestOptions).then(response => {
+            localStorage.setItem('token', JSON.stringify(response.data.token));
+            localStorage.setItem('currentPlayer', JSON.stringify(response.data.user));
+            this.setState({user: JSON.parse(localStorage.getItem('currentPlayer'))})
+                
+            this.state.game.getLevel(response.data.user.level.levelNo, false, true);
+            console.log(`Level ${currentLevel} complete, moving to ${response.data.user.level.levelNo + 1} level`);
+        });
     }
 
     drawInventory(item) {
@@ -82,7 +86,7 @@ class App extends Component {
         return (<div>
             {this.state.user !== null ?
                 <div className="welcome-user">
-                    <span>Hi, {this.state.user.firstName}</span>
+                    <span>Hi, {this.state.user.fullname}</span>
                 </div> : null}
 
 
@@ -90,7 +94,7 @@ class App extends Component {
                 <span>Hack The Maze!</span>
             </div>
             {this.state.user !== null ? <div>
-                <span className="user-level">Level- {this.state.user.level}</span>
+                <span className="user-level">Level- {this.state.user.level.levelNo}</span>
                 <span className="user-score">Score- {this.state.user.score}</span>
             </div>: null}
             <div id="container">

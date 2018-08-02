@@ -27,12 +27,11 @@ export default class Login extends Component {
             username: this.state.username,
             password: this.state.password
         }).then(response => {
+            //Store token and user object for further use
             localStorage.setItem('token', response.data.token);
-            axios.get(`${API.level}/${response.data.level}`).then(res => {
-                localStorage.setItem('currentPlayer', JSON.stringify(response.data));
-                localStorage.setItem('currentPlayerLevel', JSON.stringify(res.data));
-                this.props.history.push(`/game`);
-            });
+            localStorage.setItem('currentPlayer', JSON.stringify(response.data.user));
+            
+            this.props.history.push(`/game`);
         }).catch(error => {
             console.log(error);
         });

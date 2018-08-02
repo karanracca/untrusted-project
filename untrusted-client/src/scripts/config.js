@@ -11,6 +11,12 @@ export const API = axios.create({
     baseURL: 'http://localhost:63174/api',
 });
 
+export const requestOptions = {
+    headers: {
+        'Authorization': localStorage.getItem('token')
+    }
+}
+
 export const viewableScripts = [
     'codeEditor.js',
     'display.js',
@@ -91,7 +97,8 @@ export const APIUnused = {
     login: `${BaseAPI}/login`,
     register: `${BaseAPI}/users/createUser`,
     level: `${BaseAPI}/level`,
-    leaderboard: `${BaseAPI}/users/leaderBoard`
+    leaderboard: `${BaseAPI}/users/leaderBoard`,
+    updateLevel: `${BaseAPI}/level/updateLevel`
 }
 
 export const referenceImplementations = {

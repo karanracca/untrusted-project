@@ -23,13 +23,16 @@ namespace untrustedServer.Controllers
         [HttpPost]
         public IActionResult Login([FromBody] Login login)
         {
-            User user = us.login(login.username, login.password);
-            if (user == null)
+            User loggedInUser = us.login(login.username, login.password);
+            if (loggedInUser == null)
             {
                 return base.NotFound();
             }
-            string token = ts.createToken(user);
-            return base.Ok(new { token, user.fullname,user.score,user.level.levelNo,user.level.levelName,user.level.layout });
+            string token = ts.createToken(loggedInUser);
+            var level = new { loggedInUser.level.levelNo, loggedInUser.level.levelName, loggedInUser.level.layout };
+            var user = new { loggedInUser.fullname, loggedInUser.score ,level};
+            var response = new { token, user };
+            return base.Ok(response);
         }
         
     }
