@@ -15,10 +15,6 @@ using Newtonsoft.Json;
 
 namespace untrustedServer.Controllers
 {
-<<<<<<< HEAD
-
-=======
->>>>>>> f_refactor
     [EnableCors("AllowAnyOrigin")]
     public class LevelController : Controller
     {
