@@ -11,6 +11,10 @@ export const API = axios.create({
     baseURL: 'http://localhost:63174/api',
 });
 
+export function getAuthToken() {
+    return localStorage.getItem('token');
+}
+
 export const requestOptions = {
     headers: {
         'Authorization': localStorage.getItem('token')

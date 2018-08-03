@@ -38,14 +38,21 @@ class App extends Component {
     }
 
     levelComplete(currentLevel) {
-        axios.get(APIUnused.updateLevel, config.requestOptions).then(response => {
+        let options = {
+            headers: {
+                'Authorization': config.getAuthToken()
+            }
+        }
+        axios.get(APIUnused.updateLevel, options).then(response => {
             localStorage.setItem('token', response.data.token);
             localStorage.setItem('currentPlayer', JSON.stringify(response.data.user));
             this.setState({user: JSON.parse(localStorage.getItem('currentPlayer'))})
                 
             this.state.game.getLevel(response.data.user.level.levelNo, false, true);
             console.log(`Level ${currentLevel} complete, moving to ${response.data.user.level.levelNo + 1} level`);
-        });
+        }).catch(error => {
+            console.log(error);
+        })
     }
 
     drawInventory(item) {
