@@ -1,4 +1,11 @@
 untrusted-client/node_modules
 untrusted-client/dist
+<<<<<<< HEAD
 untrusted-server/.vs
 untrusted-server/untrustedServer/obj/Debug/netcoreapp2.0
+=======
+untrusted-server/untrustedServer/bin/Debug/netcoreapp2.0
+untrusted-server/untrustedServer/obj
+untrusted-server/.vs
+
+>>>>>>> f_refactor

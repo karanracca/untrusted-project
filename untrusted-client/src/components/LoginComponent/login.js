@@ -2,6 +2,7 @@ import React, { Component } from "react";
 import { Link } from "react-router-dom";
 import axios from 'axios';
 import './login.css';
+import { API } from '../../scripts/config';
 
 export default class Login extends Component {
 
@@ -21,36 +22,31 @@ export default class Login extends Component {
 
     handleSubmit(event) {
         event.preventDefault();
-        axios.post('http://localhost:63173/api/users/login', {
+        if (this.state.username === '' || this.state.password === '') return;
+        API.post('/login', {
             username: this.state.username,
             password: this.state.password
-        })
-            .then(response => {
-                console.log(response);
-                // axios.get('http://localhost:63174/api/level/getLevel', {
-                //     username: this.state.username,
-                //     password: this.state.password
-                // })
-                //this.props.history.push(`/game`);
-                console.log(response.data.username)
-            })
-            .catch(error => {
-                console.log(error);
-            });
+        }).then(response => {
+            //Store token and user object for further use
+            localStorage.setItem('token', response.data.token);
+            localStorage.setItem('currentPlayer', JSON.stringify(response.data.user));
+            
+            this.props.history.push(`/game`);
+        }).catch(error => {
+            console.log(error);
+        });
     }
 
     render() {
-        return (
-            <div className="login-page">
-                <div className="form">
-                    <form className="login-form">
-                        <input type="text" placeholder="username" name="username" onChange={this.handleChange} />
-                        <input type="password" placeholder="password" name="password" onChange={this.handleChange} />
-                        <button onClick={this.handleSubmit}>login</button>
-                        <p className="message">Not registered? <Link to="/register">Create an account</Link></p>
-                    </form>
-                </div>
+        return (<div className="login-page">
+            <div className="form">
+                <form className="login-form">
+                    <input type="text" placeholder="username" name="username" onChange={this.handleChange} />
+                    <input type="password" placeholder="password" name="password" onChange={this.handleChange} />
+                    <button onClick={this.handleSubmit}>login</button>
+                    <p className="message">Not registered? <Link to="/register">Create an account</Link></p>
+                </form>
             </div>
-        )
+        </div>)
     }
 }

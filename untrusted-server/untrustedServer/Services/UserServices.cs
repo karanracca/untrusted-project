@@ -15,6 +15,8 @@ namespace untrustedServer.Services
         IMongoDatabase _db;
         IMongoCollection<User> mongoCollection;
 
+        LevelService ls = new LevelService();
+
         public UserServices()
         {
             _client = new MongoClient("mongodb://admin:password12@ds255451.mlab.com:55451/mongo");
@@ -24,12 +26,17 @@ namespace untrustedServer.Services
 
         public List<User> GetUsers()
         {
-            return mongoCollection.Find(new BsonDocument()).ToList();
+            IFindFluent<User, User> findFluent = mongoCollection.Find(new BsonDocument());
+            if(findFluent.CountDocuments() == 0)
+            {
+                return new List<User>();
+            }
+            return findFluent.ToList();
         }
 
-        public User GetUser(String email)
+        public User GetUser(ObjectId id)
         {
-            var filter = Builders<User>.Filter.Eq("email", email);
+            var filter = Builders<User>.Filter.Eq("_id", id);
             return mongoCollection.Find(filter).First();
         }
 
@@ -39,15 +46,11 @@ namespace untrustedServer.Services
 
             if (users.Exists(u => u.username == user.username))
             {
-                return new NotFoundObjectResult("Username already exist");
-            }
-            else if (users.Exists(u => u.email == user.email))
-            {
-                return new NotFoundObjectResult("Email already exist");
+                return new BadRequestObjectResult("Username already exist");
             }
             else
             {
-                mongoCollection.InsertOne(new User(user.username, user.password, user.firstName, user.lastName, user.email, user.phone));
+                mongoCollection.InsertOne(new User(user.username, user.password, user.fullname));
                 return new OkObjectResult("User Created");
             }
 
@@ -55,8 +58,28 @@ namespace untrustedServer.Services
 
         public User login(string username, string password)
         {
-            return GetUsers().Find(u => u.username == username && u.password == password);
+            var filter = Builders<User>.Filter.And(Builders<User>.Filter.Eq("username", username), Builders<User>.Filter.Eq("password", username));
+            IFindFluent<User, User> findFluent = mongoCollection.Find(filter);
+            if (findFluent.CountDocuments() != 0)
+            {
+                return findFluent.First();
+            }
+            return null;
         }
 
+        public User UpdateStats(User user)
+        {
+            var filter = Builders<User>.Filter.Eq("username", user.username);
+            int newLevelNo = user.level.levelNo + 1;
+            Level updatedLevel = ls.getlevel(newLevelNo);   
+            int updatedScore = user.score + (10 * newLevelNo);
+            var update = Builders<User>.Update.Set("level", updatedLevel).Set("score", updatedScore);
+            UpdateResult updateResult = mongoCollection.UpdateOne(filter, update);
+            if (updateResult.IsAcknowledged)
+            {
+                return mongoCollection.Find(filter).First();
+            }
+            return null;
+        }
     }
 }

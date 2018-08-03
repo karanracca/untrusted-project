@@ -2,6 +2,7 @@ import React, { Component } from "react";
 import { BrowserRouter as Router, Route, Link } from "react-router-dom";
 import axios from 'axios';
 import './register.css';
+import { API } from '../../scripts/config';
 
 
 export default class Register extends Component {
@@ -11,10 +12,8 @@ export default class Register extends Component {
         this.state = {
             username: '',
             password: '',
-            firstName: '',
-            lastName: '',
-            email: '',
-            phone: '',
+            confirmPassword: '',
+            fullname: '',
         }
         this.handleChange = this.handleChange.bind(this);
         this.handleSubmit = this.handleSubmit.bind(this);
@@ -26,17 +25,18 @@ export default class Register extends Component {
 
     handleSubmit(event) {
         event.preventDefault();
-        axios.post('http://localhost:63173/api/users/CreateUser', {
+        if (this.state.username === "" || this.state.password === "" || this.state.confirmPassword === "" || this.state.fullname === "") {
+            return;
+        }
+        API.post(`/users/createUser`, {
             username: this.state.username,
             password: this.state.password,
-            firstName: this.state.firstName,
-            lastName: this.state.lastName,
-            email: this.state.email,
-            phone: this.state.phone
+            fullname: this.state.fullname,
         }).then(response => {
-            this.props.history.push(`/login`); 
-            console.log(response) 
-        });
+            this.props.history.push(`/login`);  
+        }).catch(error => {
+            console.log(error);
+        })
     }
 
     render() {
@@ -44,12 +44,10 @@ export default class Register extends Component {
             <div className="login-page">
                 <div className="form">
                     <form className="register-form">
-                        <input type="text" placeholder="username" name="username" onChange={this.handleChange} />
-                        <input type="password" placeholder="password" name="password" onChange={this.handleChange} />
-                        <input type="text" placeholder="First Name" name="firstName" onChange={this.handleChange} />
-                        <input type="text" placeholder="Last Name" name="lastName" onChange={this.handleChange} />
-                        <input type="text" placeholder="Email Id" name="email" onChange={this.handleChange} />
-                        <input type="text" placeholder="Phone Number" name="phone" onChange={this.handleChange} />
+                        <input type="text" placeholder="Username" name="username" onChange={this.handleChange} />
+                        <input type="password" placeholder="Password" name="password" onChange={this.handleChange} />
+                        <input type="password" placeholder="Confirm Password" name="confirmPassword" onChange={this.handleChange} />
+                        <input type="text" placeholder="Fullname" name="fullname" onChange={this.handleChange} />
                         <button onClick={this.handleSubmit}>create</button>
                         <p className="message">Already registered? <Link to="/login">Sign In</Link></p>
                     </form>

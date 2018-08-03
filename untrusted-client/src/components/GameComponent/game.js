@@ -6,6 +6,11 @@ import './game.css';
 import 'codemirror/theme/vibrant-ink.css';
 import 'codemirror/lib/codemirror.css';
 import HelpPane from '../HelpComponent/helpPane';
+import axios from 'axios';
+import Leaderboard from "../LeaderboardComponent/leaderboard";
+import { APIUnused } from '../../scripts/config';
+import * as config  from '../../scripts/config';
+
 
 class App extends Component {
 
@@ -13,18 +18,19 @@ class App extends Component {
         super();
         this.state = {
             inventory: [],
-            game: null
+            game: {},
+            showHelp: false,
+            showLeaderboard: false,
+            user: localStorage.getItem('currentPlayer') ? JSON.parse(localStorage.getItem('currentPlayer')) : null
         }
     }
 
     componentDidMount() {
         window.ROT = ROT;
-        let startLevel = util.getParameterByName('lvl') ? parseInt(getParameterByName('lvl')) : null;
+        let startLevel = this.state.user.level.levelNo;
         let game = new Game(startLevel, "screen", this);
         this.setState({ game }, () => {
-            //console.log(game);
             this.state.game.initialize();
-            //this.state.game.start(1);
             // contentEditable is required for canvas elements to detect keyboard events
             this.state.game.display.getContainer().setAttribute("contentEditable", "true");
             document.getElementById("screen").appendChild(this.state.game.display.getContainer());
@@ -32,9 +38,21 @@ class App extends Component {
     }
 
     levelComplete(currentLevel) {
-        //this.getLevel(this._currentLevel + 1, false, true); just temp refrence
-        this.state.game.getLevel(currentLevel + 1, false, true);
-        console.log(`Level ${currentLevel} complete, moving to ${currentLevel + 1} level`);
+        let options = {
+            headers: {
+                'Authorization': config.getAuthToken()
+            }
+        }
+        axios.get(APIUnused.updateLevel, options).then(response => {
+            localStorage.setItem('token', response.data.token);
+            localStorage.setItem('currentPlayer', JSON.stringify(response.data.user));
+            this.setState({user: JSON.parse(localStorage.getItem('currentPlayer'))})
+                
+            this.state.game.getLevel(response.data.user.level.levelNo, false, true);
+            console.log(`Level ${currentLevel} complete, moving to ${response.data.user.level.levelNo + 1} level`);
+        }).catch(error => {
+            console.log(error);
+        })
     }
 
     drawInventory(item) {
@@ -51,8 +69,41 @@ class App extends Component {
         this.state.game.resetLevel(this.state.game._currentLevel);
     }
 
+    openHelp() {
+        this.setState({ showHelp: true });
+    }
+
+    closeHelp() {
+        this.setState({ showHelp: false });
+    }
+
+    openLeaderboard() {
+        this.setState({ showLeaderboard: true })
+    }
+
+    closeLeaderboard() {
+        this.setState({ showLeaderboard: false });
+    }
+
+    logout() {
+        this.props.history.push('/login');
+    }
+
     render() {
-        return (
+        return (<div>
+            {this.state.user !== null ?
+                <div className="welcome-user">
+                    <span>Hi, {this.state.user.fullname}</span>
+                </div> : null}
+
+
+            <div className="main-title">
+                <span>Hack The Maze!</span>
+            </div>
+            {this.state.user !== null ? <div>
+                <span className="user-level">Level- {this.state.user.level.levelNo}</span>
+                <span className="user-score">Score- {this.state.user.score}</span>
+            </div>: null}
             <div id="container">
                 <div id="panes">
                     <div id="screenPane">
@@ -79,12 +130,26 @@ class App extends Component {
                                     <span className="keys">^4</span> Reset
                                 </a>
                             </span>
+                            <span onClick={() => this.openHelp()}>
+                                <a id="helpButton" title="Ctrl+1: API Reference">
+                                    <span className="keys">^1</span> API
+                                </a>
+                            </span>
+
+                            <span onClick={() => this.openLeaderboard()}>
+                                <a id="helpButton" title="Ctrl+1: API Reference">
+                                    <span className="keys">^2</span> Leaderboard
+                                </a>
+                            </span>
                         </div>
                     </div>
-                    {/* <HelpPane></HelpPane> */}
+                    {this.state.showHelp && this.state.game.helpCommands ? <HelpPane help={this.state.game.helpCommands} close={this.closeHelp.bind(this)}></HelpPane> : null}
+
+                    {this.state.showLeaderboard ? <Leaderboard close={this.closeLeaderboard.bind(this)}></Leaderboard> : null}
                 </div>
             </div>
-        );
+            <span onClick={() => { this.logout() }} className="logout-btn"><a>Logout</a></span>
+        </div>);
     }
 }
 

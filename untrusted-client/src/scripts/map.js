@@ -1,5 +1,6 @@
 import * as util from './util';
 import Player from './player';
+import DynamicObject from './dynamicObject';
 
 export default class Map {
 
@@ -380,7 +381,7 @@ export default class Map {
         //__game.drawInventory();
     };
 
-    countObjects (type) {
+    countObjects(type) {
         let count = 0;
         // count static objects
         for (let x = 0; x < this.width; x++) {
@@ -391,7 +392,7 @@ export default class Map {
             }
         }
         // count dynamic objects
-        this.dynamicObjects.forEach(function (obj) {
+        this._dynamicObjects.forEach(function (obj) {
             if (obj.getType() === type) {
                 count++;
             }
@@ -434,48 +435,49 @@ export default class Map {
         this.display.drawAll(this);
     }
 
-    //     this.createFromGrid = wrapExposedMethod(function (grid, tiles, xOffset, yOffset) {
-    //         for (var y = 0; y < grid.length; y++) {
-    //             var line = grid[y];
-    //             for (var x = 0; x < line.length; x++) {
-    //                 var tile = line[x];
-    //                 var type = tiles[tile];
-    //                 if (type === 'player') {
-    //                     this.placePlayer(x + xOffset, y + yOffset);
-    //                 } else if (type) {
-    //                     this.placeObject(x + xOffset, y + yOffset, type);
-    //                 }
-    //             }
-    //         }
-    //     }, this);
+    createFromGrid(grid, tiles, xOffset, yOffset) {
+        for (let y = 0; y < grid.length; y++) {
+            let line = grid[y];
+            for (let x = 0; x < line.length; x++) {
+                let tile = line[x];
+                let type = tiles[tile];
+                if (type === 'player') {
+                    this.placePlayer(x + xOffset, y + yOffset);
+                } else if (type) {
+                    this.placeObject(x + xOffset, y + yOffset, type);
+                }
+            }
+        }
+    };
 
-    //     this.setSquareColor = wrapExposedMethod(function (x, y, bgColor) {
-    //         var x = Math.floor(x); var y = Math.floor(y);
+    setSquareColor(x, y, bgColor) {
+        x = Math.floor(x);
+        y = Math.floor(y);
+        this._grid[x][y].bgColor = bgColor;
+    };
 
-    //         __grid[x][y].bgColor = bgColor;
-    //     }, this);
+    defineObject(name, properties) {
+        if (this.objectDefinitions[name]) {
+            throw "There is already a type of object named " + name + "!";
+        }
 
-    //     this.defineObject = wrapExposedMethod(function (name, properties) {
-    //         if (__objectDefinitions[name]) {
-    //             throw "There is already a type of object named " + name + "!";
-    //         }
+        if (this._properties.interval && this._properties.interval < 100) {
+            throw "defineObject(): minimum interval is 100 milliseconds";
+        }
 
-    //         if (properties.interval && properties.interval < 100) {
-    //             throw "defineObject(): minimum interval is 100 milliseconds";
-    //         }
+        this.objectDefinitions[name] = properties;
+    };
 
-    //         __objectDefinitions[name] = properties;
-    //     }, this);
+    getObjectTypeAt(x, y) {
+        x = Math.floor(x);
+        y = Math.floor(y);
 
-    //     this.getObjectTypeAt = wrapExposedMethod(function (x, y) {
-    //         var x = Math.floor(x); var y = Math.floor(y);
-
-    //         // Bazek: We should always check, if the coordinates are inside of map!
-    //         if (x >= 0 && x < this.getWidth() && y >= 0 && y < this.getHeight())
-    //             return __grid[x][y].type;
-    //         else
-    //             return '';
-    //     }, this);
+        // Bazek: We should always check, if the coordinates are inside of map!
+        if (x >= 0 && x < this.width && y >= 0 && y < this.height)
+            return this._grid[x][y].type;
+        else
+            return '';
+    };
 
     //     this.getAdjacentEmptyCells = wrapExposedMethod(function (x, y) {
     //         var x = Math.floor(x); var y = Math.floor(y);
@@ -548,19 +550,21 @@ export default class Map {
         return true;
     }
 
-    //     this.writeStatus = wrapExposedMethod(function(status) {
-    //         this._status = status;
-
-    //         if (__refreshRate) {
-    //             // write the status immediately
-    //             display.writeStatus(status);
-    //         } else {
-    //             // wait 100 ms for redraw reasons
-    //             setTimeout(function () {
-    //                 display.writeStatus(status);
-    //             }, 100);
-    //         }
-    //     }, this);
+    writeStatus(status) {
+        //this._status = status;
+        // if (__refreshRate) {
+        //     // write the status immediately
+        //     this.display.writeStatus(status);
+        // } else {
+        //     // wait 100 ms for redraw reasons
+        //     setTimeout(function () {
+        //         display.writeStatus(status);
+        //     }, 100);
+        // }
+        setTimeout(function () {
+            this.display.writeStatus(status);
+        }, 100);
+    };
 
     //     // used by validators
     //     // returns true iff called at the start of the level (that is, on DummyMap)
@@ -640,21 +644,21 @@ export default class Map {
         }
     };
 
-    validateAtMostXObjects (num, type) {
+    validateAtMostXObjects(num, type) {
         let count = this.countObjects(type);
         if (count > num) {
             throw 'Too many ' + type + 's on the map! Expected: ' + num + ', found: ' + count;
         }
     };
 
-    validateExactlyXManyObjects (num, type) {
+    validateExactlyXManyObjects(num, type) {
         let count = this.countObjects(type);
         if (count != num) {
             throw 'Wrong number of ' + type + 's on the map! Expected: ' + num + ', found: ' + count;
         }
     };
 
-    validateAtMostXDynamicObjects (num) {
+    validateAtMostXDynamicObjects(num) {
         let count = this.dynamicObjects.length;
         if (count > num) {
             throw 'Too many dynamic objects on the map! Expected: ' + num + ', found: ' + count;
@@ -668,7 +672,7 @@ export default class Map {
     //         }
     //     }, this);
 
-    validateAtLeastXLines (num) {
+    validateAtLeastXLines(num) {
         let count = this._lines.length;
         if (count < num) {
             throw 'Not enough lines on the map! Expected: ' + num + ', found: ' + count;

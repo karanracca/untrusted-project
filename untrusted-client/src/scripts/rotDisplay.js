@@ -11,7 +11,8 @@ export default class GameDisplay extends ROT.Display {
         this._grid = null;
         this._offset = 0;
         this._intro = false;
-        this.game = game
+        this.game = game;
+        this.errors = [];
     }
 
     // drawObject takes care of looking up an object's symbol and color
@@ -58,7 +59,7 @@ export default class GameDisplay extends ROT.Display {
             let obj = map._dynamicObjects[i];
             this._grid[obj.getX()][obj.getY()] = {
                 type: obj.getType(),
-                bgColor: map._grid()[obj.getX()][obj.getY()].bgColor
+                bgColor: map._grid[obj.getX()][obj.getY()].bgColor
             };
         }
     
@@ -167,6 +168,18 @@ export default class GameDisplay extends ROT.Display {
             this.drawText(10, i + 22, "Press any key to begin ...");
             setTimeout(this.playIntro(height, i - 1), 100);
         }
+    };
+
+    appendError (errorText, command) {
+        let map = this.game.map;
+        if (!command) {
+            command = "%c{#0f0}> run " + config.levelFileNames[this.game._currentLevel - 1];
+        }
+    
+        this._offset -= 3;
+        this.errors = this.errors.concat([command, errorText, ""]);
+        this.clear();
+        this.drawAll(map);
     };
 
 }
