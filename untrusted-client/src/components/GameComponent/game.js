@@ -21,6 +21,7 @@ class App extends Component {
             game: {},
             showHelp: false,
             showLeaderboard: false,
+            chapter: '',
             user: localStorage.getItem('currentPlayer') ? JSON.parse(localStorage.getItem('currentPlayer')) : null
         }
     }
@@ -89,6 +90,20 @@ class App extends Component {
         this.props.history.push('/login');
     }
 
+    displayChapter(message, cssClass) {
+        this.setState({
+            chapter: message,
+            showChapter: true
+        }, ()=> {
+            setTimeout(function (that) {
+                that.setState({
+                    chapter: '',
+                    showChapter: false
+                })
+            }, 5 * 1000, this);
+        })
+    }
+
     render() {
         return (<div>
             {this.state.user !== null ?
@@ -114,7 +129,11 @@ class App extends Component {
                             {this.state.inventory}
                         </div>
                         <div id="output"></div>
-                        <div id="chapter"></div>
+                        {this.state.showChapter?
+                        <div id="chapter">
+                            {this.state.chapter}
+                        </div>:null
+                        }
                     </div>
 
                     <div id="editorPane">

@@ -546,10 +546,6 @@ export default class Map {
     //     //     }
     //     // }, this);
 
-    displayChapter() {
-        return true;
-    }
-
     writeStatus(status) {
         //this._status = status;
         // if (__refreshRate) {
