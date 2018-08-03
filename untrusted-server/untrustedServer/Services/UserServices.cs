@@ -58,7 +58,7 @@ namespace untrustedServer.Services
 
         public User login(string username, string password)
         {
-            var filter = Builders<User>.Filter.And(Builders<User>.Filter.Eq("username", username), Builders<User>.Filter.Eq("password", username));
+            var filter = Builders<User>.Filter.And(Builders<User>.Filter.Eq("username", username), Builders<User>.Filter.Eq("password", password));
             IFindFluent<User, User> findFluent = mongoCollection.Find(filter);
             if (findFluent.CountDocuments() != 0)
             {
