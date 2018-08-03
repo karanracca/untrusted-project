@@ -1,4 +1,4 @@
-export default reference = {
+export default {
     'canvas.beginPath': {
         'name': 'canvasContext.beginPath()',
         'category': 'canvas',
@@ -200,7 +200,7 @@ export default reference = {
         'type': 'method',
         'description': 'Returns all dynamic objects currently on the map.'
     },
-    'map.getHeight': {
+    'map.height': {
         'name': 'map.getHeight()',
         'category': 'map',
         'type': 'method',
@@ -224,7 +224,7 @@ export default reference = {
         'type': 'method',
         'description': 'Returns a hexadecimal string representing a random color in between the start and end colors. The start and end colors must be arrays of the form [R, G, B], where R, G, and B are decimal integers.'
     },
-    'map.getWidth': {
+    'map.width': {
         'name': 'map.getWidth()',
         'category': 'map',
         'type': 'method',

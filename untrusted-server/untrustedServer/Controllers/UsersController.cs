@@ -1,9 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.IdentityModel.Tokens;
+using Newtonsoft.Json;
 using untrustedServer.Models;
 using untrustedServer.Services;
 
@@ -15,12 +17,21 @@ namespace untrustedServer.Controllers
     public class UsersController : Controller
     {
         UserServices us = new UserServices();
+        TokenService ts = new TokenService();
+        LevelService ls = new LevelService();
 
         [HttpGet]
         [Route("api/[controller]")]
-        public IEnumerable<User> GetUsers()
+        public IActionResult GetUsers()
         {
-            return us.GetUsers();
+            if (ts.validateToken(this.Request, out SecurityToken securityToken))
+            {
+                return base.Ok(us.GetUsers().Select(user=> new { user.fullname,user.score,user.level.levelNo,user.level.levelName,user.level.layout}));
+            }
+            else
+            {
+                return base.Unauthorized();
+            }
         }
 
         [HttpPost]
@@ -30,40 +41,31 @@ namespace untrustedServer.Controllers
         {
             if (user == null)
             {
-                return new BadRequestResult();
+                return base.BadRequest("Enter all details");
             }
             return us.CreateUser(user);
         }
-
-        [HttpPost]
-        [Route("api/[controller]/[action]")]
-        [ActionName("Login")]
-        public IActionResult Login([FromBody] Login login)
-        {
-            if (string.IsNullOrEmpty(login.username) || string.IsNullOrEmpty(login.password))
-            {
-                return new BadRequestResult();
-            }
-
-            User user = us.login(login.username, login.password);
-            if (user == null)
-            {
-                return NotFound();
-            }
-            return Ok(user);
-        }
-
+        
         [HttpGet]
         [Route("api/[controller]/[action]")]
         [ActionName("Leaderboard")]
-        public IEnumerable<Stats> GetLeaderBoard()
+        public IActionResult GetLeaderBoard()
         {
-            List<User> users = us.GetUsers();
-            if (users.Count() == 0)
+            if (ts.validateToken(this.Request, out SecurityToken securityToken))
             {
-                return Enumerable.Empty<Stats>();
+                List<User> users = us.GetUsers();
+                if (users.Count() == 0)
+                {
+                    return base.NotFound();
+                }
+                return base.Ok(users.Select(user => new Stats(user.fullname,user.score, user.level.levelNo)).OrderByDescending(stats => stats.score));
             }
-            return users.Select(user => new Stats(user.firstName, user.lastName, user.score, user.level));
+            else
+            {
+                return base.Unauthorized();
+            }
         }
+
+       
     }
 }
