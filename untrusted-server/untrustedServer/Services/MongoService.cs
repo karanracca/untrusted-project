@@ -18,8 +18,8 @@ namespace untrustedServer.Services
         {
             try
             {
-                _client = new MongoClient("mongodb://admin:password12@ds113122.mlab.com:13122/mongo");
-                _db = _client.GetDatabase("mongo");
+                _client = new MongoClient("mongodb://admin:password12@ds113402.mlab.com:13402/backup");
+                _db = _client.GetDatabase("backup");
                 userCollection = _db.GetCollection<User>("Users");
                 levelCollection = _db.GetCollection<Level>("Levels");
             }

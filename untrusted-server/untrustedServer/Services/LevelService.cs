@@ -25,7 +25,7 @@ namespace untrustedServer.Services
         public IActionResult CreateLevel()
         {
             string line;
-            System.IO.StreamReader file = new System.IO.StreamReader(@"TextFIle.txt");
+            System.IO.StreamReader file = new System.IO.StreamReader(@"TextFile.txt");
             int count = 1;
             while ((line = file.ReadLine())!=null)
             {
