@@ -8,27 +8,36 @@ import 'codemirror/lib/codemirror.css';
 import HelpPane from '../HelpComponent/helpPane';
 import axios from 'axios';
 import Leaderboard from "../LeaderboardComponent/leaderboard";
-import { APIUnused } from '../../scripts/config';
+import { API } from '../../scripts/config';
 import * as config  from '../../scripts/config';
+import Sound from "../../scripts/sound";
 
+const appendInventory = (inventory, i) => {
+    return(<span key={i} className="item" style={{color: inventory.color ? inventory.color : '#fff'}}>
+        {inventory.symbol}
+    </span>)
+}
 
 class App extends Component {
 
-    constructor() {
-        super();
+    constructor(props) {
+        super(props);
         this.state = {
             inventory: [],
             game: {},
             showHelp: false,
             showLeaderboard: false,
             chapter: '',
-            user: localStorage.getItem('currentPlayer') ? JSON.parse(localStorage.getItem('currentPlayer')) : null
+            showEditor: false,
+            user: localStorage.getItem('currentPlayer') ? JSON.parse(localStorage.getItem('currentPlayer')) : props.history.push('/login'),
+            sound: new Sound('local')
         }
     }
 
     componentDidMount() {
         window.ROT = ROT;
         let startLevel = this.state.user.level.levelNo;
+        if (startLevel>1) this.setState({showEditor: true});
         let game = new Game(startLevel, "screen", this);
         this.setState({ game }, () => {
             this.state.game.initialize();
@@ -39,12 +48,8 @@ class App extends Component {
     }
 
     levelComplete(currentLevel) {
-        let options = {
-            headers: {
-                'Authorization': config.getAuthToken()
-            }
-        }
-        axios.get(APIUnused.updateLevel, options).then(response => {
+        let options = {headers:{'Authorization': config.getAuthToken()}}
+        axios.get(API.updateLevel, options).then(response => {
             localStorage.setItem('token', response.data.token);
             localStorage.setItem('currentPlayer', JSON.stringify(response.data.user));
             this.setState({user: JSON.parse(localStorage.getItem('currentPlayer'))})
@@ -58,6 +63,7 @@ class App extends Component {
 
     drawInventory(item) {
         let inv = this.state.inventory.slice(0);
+        item = this.state.game.map.getObjectDefinition(item);
         inv.push(item);
         this.setState({ inventory: inv });
     }
@@ -87,7 +93,12 @@ class App extends Component {
     }
 
     logout() {
+        localStorage.clear();
         this.props.history.push('/login');
+    }
+
+    showEditor() {
+        this.setState({showEditor: true});
     }
 
     displayChapter(message, cssClass) {
@@ -100,11 +111,14 @@ class App extends Component {
                     chapter: '',
                     showChapter: false
                 })
-            }, 5 * 1000, this);
+            }, 2000, this);
         })
     }
 
     render() {
+
+        const {showEditor, inventory} = this.state;
+
         return (<div>
             {this.state.user !== null ?
                 <div className="welcome-user">
@@ -113,20 +127,19 @@ class App extends Component {
 
 
             <div className="main-title">
-                <span>Hack The Maze!</span>
+                <span>The Advantures of Dr. Eval</span>
             </div>
             {this.state.user !== null ? <div>
-                <span className="user-level">Level- {this.state.user.level.levelNo}</span>
-                <span className="user-score">Score- {this.state.user.score}</span>
+                <span className="user-level">Level-{this.state.user.level.levelNo}</span>
+                <span className="user-score">Score-{this.state.user.score}</span>
             </div>: null}
             <div id="container">
                 <div id="panes">
                     <div id="screenPane">
-                        {/* <canvas id="drawingCanvas"></canvas> */}
                         <div id="dummyDom"></div>
                         <div id="screen"></div>
                         <div id="inventory">
-                            {this.state.inventory}
+                        INVENTORY {inventory.map((item, i) => appendInventory(item, i))}
                         </div>
                         <div id="output"></div>
                         {this.state.showChapter?
@@ -135,27 +148,26 @@ class App extends Component {
                         </div>:null
                         }
                     </div>
-
-                    <div id="editorPane">
+                    <div id="editorPane" style={{display: showEditor? 'block': 'none'}}>
                         <textarea id="editor"></textarea>
                         <div id="buttons">
-                            <span onClick={() => this.onExecute()}>
+                            <span className="editor-btn" onClick={() => this.onExecute()}>
                                 <a id="executeButton" title="Ctrl+5: Execute">
                                     <span className="keys">^5</span> Execute
                                 </a>
                             </span>
-                            <span onClick={() => this.onReset()}>
+                            <span className="editor-btn" onClick={() => this.onReset()}>
                                 <a id="resetButton" title="Ctrl+4: Reset Level">
                                     <span className="keys">^4</span> Reset
                                 </a>
                             </span>
-                            <span onClick={() => this.openHelp()}>
+                            <span className="editor-btn" onClick={() => this.openHelp()}>
                                 <a id="helpButton" title="Ctrl+1: API Reference">
                                     <span className="keys">^1</span> API
                                 </a>
                             </span>
 
-                            <span onClick={() => this.openLeaderboard()}>
+                            <span className="editor-btn" onClick={() => this.openLeaderboard()}>
                                 <a id="helpButton" title="Ctrl+1: API Reference">
                                     <span className="keys">^2</span> Leaderboard
                                 </a>

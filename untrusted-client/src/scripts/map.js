@@ -7,6 +7,7 @@ export default class Map {
     constructor(display, game) {
         /* private variables */
         this.game = game;
+        this.app = game.app;
         this.display = display;
         this.player;
         this.objectDefinitions = util.getListOfObjects(this.game);
@@ -546,6 +547,10 @@ export default class Map {
     //     //     }
     //     // }, this);
 
+    displayChapter(chapterName, cssClass) {
+        this.game.displayChapter(chapterName, cssClass);
+    }
+
     writeStatus(status) {
         //this._status = status;
         // if (__refreshRate) {
@@ -557,9 +562,9 @@ export default class Map {
         //         display.writeStatus(status);
         //     }, 100);
         // }
-        setTimeout(function () {
-            this.display.writeStatus(status);
-        }, 100);
+        setTimeout(function (that) {
+            that.display.writeStatus(status);
+        }, 100, this);
     };
 
     //     // used by validators

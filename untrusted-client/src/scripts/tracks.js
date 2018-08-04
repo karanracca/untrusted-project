@@ -1,6 +1,6 @@
-export default tracks = {
+export default {
     'Adversity': {
-        path: "music/Adversity.mp3",
+        path: "music/Adversity",
         artist: "Seropard",
         title: "Adversity",
         url: "https://soundcloud.com/seropard"

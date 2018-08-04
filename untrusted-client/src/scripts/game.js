@@ -87,7 +87,8 @@ export default class Game {
         //     this.getLevel(Math.min(this._levelReached, 21));
         // } 
         } else {
-            this.display.playIntro(this.dimensions.height);
+            //this.display.playIntro(this.dimensions.height);
+            this.getLevel(this.startLevel);
         }
 
         //Set up event handler
@@ -107,8 +108,7 @@ export default class Game {
     };
 
     start(lvl) {
-        this.getLevel(lvl? lvl :this.startLevel
-         );
+        this.getLevel(lvl? lvl :this.startLevel);
     }
 
     // makes an ajax request to get the level text file and then loads it into the game
@@ -124,7 +124,7 @@ export default class Game {
         //Store level in local storage
         localStorage.setItem('levelReached', this._levelReached);
 
-        let fileName =  '05_minesweeper.jsx' //config.levelFileNames[levelNum - 1];
+        let fileName =  config.levelFileNames[levelNum - 1];
         let lvlCode = config.levels['levels/' + fileName];
 
         // if (movingToNextLevel) {
@@ -429,13 +429,13 @@ export default class Game {
     };
 
     // setInventoryStateByLevel (levelNum) {
-    //     // first remove items that have onDrop effects on UI
-    //     if (levelNum == 1) {
-    //         this.removeFromInventory('computer');
-    //     }
-    //     if (levelNum <= 7) {
-    //         this.removeFromInventory('phone');
-    //     }
+    //     // // first remove items that have onDrop effects on UI
+    //     // if (levelNum == 1) {
+    //     //     this.removeFromInventory('computer');
+    //     // }
+    //     // if (levelNum <= 7) {
+    //     //     this.removeFromInventory('phone');
+    //     // }
 
     //     // clear any remaining items from inventory
     //     this.inventory = [];

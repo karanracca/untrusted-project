@@ -9,6 +9,8 @@
 	top: 2%;
 	right: 2%;
 	font-size: 1rem;
+	text-decoration: underline;
+	cursor: pointer;
 }
 
 .welcome-user{
@@ -18,21 +20,44 @@
 	font-size: 1rem;
 }
 
+#inventory {
+	color: white;
+	font-size: 13px;
+	cursor: default;
+}
+
+#inventory .item {
+	position: relative;
+	top: 3px;
+	margin-right: 5px;
+	font-size: 20px;
+}
+
+.user-level{
+	margin-left: 1%;
+	color: yellow;
+	font-size: 1.2rem;
+}
+
+.user-score{
+	font-size: 1.2rem;
+	margin-right: 1%;
+    float: right;
+	color: yellow
+}
+
 #container {
 	border: 3px solid green;
 }
 
 #panes {
-	display: grid;
+	display: flex;
+	justify-content: center;
 }
 
 #screenPane {
 	position: relative;
 	color: transparent;
-	grid-column-start: 1;
-  	grid-column-end: auto;
-  	grid-row-start: 1;
-  	grid-row-end: auto;
 }
 
 #chapter {
@@ -53,10 +78,6 @@
 }
 
 #editorPane {
-	grid-column-start: 2;
-  	grid-column-end: auto;
-  	grid-row-start: 1;
-  	grid-row-end: auto;
 }
 
 #editorPane #buttons {
@@ -64,6 +85,10 @@
 	padding: 7px;
 	background: #000;
 	cursor: pointer;
+}
+
+.editor-btn{
+	margin: 0 2%;
 }
 
 #editorPane #buttons a:hover {

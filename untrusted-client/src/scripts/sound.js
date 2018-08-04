@@ -12,8 +12,10 @@ export default class Sound {
         this.currentLevelNum = -1;
         this.sound = this;
         this.source = sources[source];
+    }
 
-        var audio = new Audio('audio_file.mp3');
+    playTrack() {
+        let audio = new Audio(Tracks.Adversity.path);
         audio.play();
     }
  
