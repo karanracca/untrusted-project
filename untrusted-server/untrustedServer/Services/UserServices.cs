@@ -19,7 +19,7 @@ namespace untrustedServer.Services
 
         public UserServices()
         {
-            _client = new MongoClient("mongodb://admin:password12@ds255451.mlab.com:55451/mongo");
+            _client = new MongoClient("mongodb://admin:password12@ds113122.mlab.com:13122/mongo");
             _db = _client.GetDatabase("mongo");
             mongoCollection = _db.GetCollection<User>("Users");
         }
@@ -58,7 +58,7 @@ namespace untrustedServer.Services
 
         public User login(string username, string password)
         {
-            var filter = Builders<User>.Filter.And(Builders<User>.Filter.Eq("username", username), Builders<User>.Filter.Eq("password", username));
+            var filter = Builders<User>.Filter.And(Builders<User>.Filter.Eq("username", username), Builders<User>.Filter.Eq("password", password));
             IFindFluent<User, User> findFluent = mongoCollection.Find(filter);
             if (findFluent.CountDocuments() != 0)
             {

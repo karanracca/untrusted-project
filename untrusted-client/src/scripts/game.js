@@ -115,8 +115,8 @@ export default class Game {
         this._levelReached = Math.max(levelNum, this._levelReached);
 
         let fileName =  config.levelFileNames[levelNum - 1];
-        //let lvlCode = config.levels['levels/' + fileName];
-        let lvlCode = JSON.parse(localStorage.getItem('currentPlayer')).level.layout;
+        let lvlCode = config.levels['levels/' + fileName];
+        //let lvlCode = JSON.parse(localStorage.getItem('currentPlayer')).level.layout;
 
         game._currentLevel = levelNum;
         game._currentBonusLevel = null;
