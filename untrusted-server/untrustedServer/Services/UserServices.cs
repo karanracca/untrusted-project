@@ -19,7 +19,7 @@ namespace untrustedServer.Services
 
         public UserServices()
         {
-            _client = new MongoClient("mongodb://admin:password12@ds255451.mlab.com:55451/mongo");
+            _client = new MongoClient("mongodb://admin:password12@ds113122.mlab.com:13122/mongo");
             _db = _client.GetDatabase("mongo");
             mongoCollection = _db.GetCollection<User>("Users");
         }
