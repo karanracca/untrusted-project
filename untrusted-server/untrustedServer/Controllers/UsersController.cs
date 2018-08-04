@@ -66,6 +66,31 @@ namespace untrustedServer.Controllers
             }
         }
 
-       
+        [HttpGet]
+        [Route("api/[controller]/[action]")]
+        [ActionName("ResetLevel")]
+        public IActionResult ResetLevel()
+        {
+            if (ts.validateToken(this.Request, out SecurityToken securityToken))
+            {
+                User loggedInUser = ts.getUserFromToken(securityToken);
+                loggedInUser = us.resetStats(loggedInUser);
+                if (loggedInUser == null)
+                {
+                    return NotFound();
+                }
+                string token = ts.createToken(loggedInUser);
+                var level = new { loggedInUser.level.levelNo, loggedInUser.level.levelName, loggedInUser.level.layout };
+                var user = new { loggedInUser.fullname, loggedInUser.score, level };
+                var response = new { token, user };
+                return base.Ok(response);
+            }
+            else
+            {
+                return Unauthorized();
+            }
+        }
+
+
     }
 }

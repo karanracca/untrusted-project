@@ -13,7 +13,9 @@ class App extends Component {
                     <Route exact path="/" component={Login}/>
                     <Route path="/login" component={Login}/>
                     <Route path="/register" component={Register}/>
-                    <Route path="/game" component={Game}/>
+                    <Route path="/game" render={(props)=> (
+                        localStorage.getItem('currentPlayer')? <Game {...props}/>: <Login {...props}/>
+                    )}/>
                 </div>
             </Router>
         );

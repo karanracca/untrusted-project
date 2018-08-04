@@ -28,6 +28,7 @@ export default function Validate(allCode, playerCode, restartingLevelFromScript,
                 "throw '[Line " + (i + 1) + "] TimeOutException: Maximum loop execution time of " + game.allowedTime + " ms exceeded.';" +
                 "}");
         }).join('\n');
+        //allCode = allCode.replace(/\\/g, "")
 
         // evaluate the code to get startLevel() and (opt) validateLevel() methods
         //this._eval(allCode);

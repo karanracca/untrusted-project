@@ -11,15 +11,14 @@ namespace untrustedServer.Services
 {
     public class LevelService
     {
-        MongoClient _client;
-        IMongoDatabase _db;
-        IMongoCollection<Level> mongoCollection;
+
+        IMongoCollection<Level> levelCollection;
+        MongoService ms =  new MongoService();
 
         public LevelService()
         {
-            _client = new MongoClient("mongodb://admin:password12@ds255451.mlab.com:55451/mongo");
-            _db = _client.GetDatabase("mongo");
-            mongoCollection = _db.GetCollection<Level>("Levels");
+
+            levelCollection = ms.GetLevel;
 
         }
 
@@ -31,7 +30,7 @@ namespace untrustedServer.Services
             while ((line = file.ReadLine())!=null)
             {
                 string[] split = line.Split('^');
-                mongoCollection.InsertOne(new Level(count, split[0], split[1]));
+                levelCollection.InsertOne(new Level(count, split[0], split[1]));
                 count++;
             }
             return new OkObjectResult("Levels Created");
@@ -41,7 +40,7 @@ namespace untrustedServer.Services
         public Level getlevel(int levelNo)
         {
             var filter = Builders<Level>.Filter.Eq("number", levelNo);
-            return mongoCollection.Find(filter).First();
+            return levelCollection.Find(filter).First();
         }
     }
 }
