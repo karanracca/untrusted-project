@@ -32,6 +32,7 @@ export default class Game {
         this._currentBonusLevel = null;
         this._levelReached = 1;
         this._displayedChapters = [];
+        this._globalVars = [];
         this._eval = window.eval;// store our own copy of eval so that we can override window.eval
     }
 
@@ -60,12 +61,12 @@ export default class Game {
 
         // Initialize validator
         this.saveReferenceImplementations(); // prevents tampering with methods
-        //this._globalVars = []; // keep track of current global variables
-        // for (p in window) {
-        //     if (window.propertyIsEnumerable(p)) {
-        //         this._globalVars.push(p);
-        //     }
-        // }
+         // keep track of current global variables
+        for (let p in window) {
+            if (window.propertyIsEnumerable(p)) {
+                this._globalVars.push(p);
+            }
+        }
 
         // Enable controls
         //this.enableShortcutKeys();
@@ -86,7 +87,8 @@ export default class Game {
         //     this.getLevel(Math.min(this._levelReached, 21));
         // } 
         } else {
-            this.display.playIntro(this.dimensions.height);
+            //this.display.playIntro(this.dimensions.height);
+            this.getLevel(this.startLevel);
         }
 
         //Set up event handler
@@ -106,7 +108,7 @@ export default class Game {
     };
 
     start(lvl) {
-        this.getLevel(lvl? lvl :this.startLevel );
+        this.getLevel(lvl? lvl :this.startLevel);
     }
 
     // makes an ajax request to get the level text file and then loads it into the game
@@ -122,7 +124,7 @@ export default class Game {
         //Store level in local storage
         localStorage.setItem('levelReached', this._levelReached);
 
-        let fileName = config.levelFileNames[levelNum - 1];
+        let fileName =  config.levelFileNames[levelNum - 1];
         let lvlCode = config.levels['levels/' + fileName];
 
         // if (movingToNextLevel) {
@@ -219,7 +221,7 @@ export default class Game {
             // on maps with many objects (e.g. boss fight),
             // we can't afford to do these steps
             if (!this.map._properties.quickValidateCallback) {
-                //this.clearModifiedGlobals();
+                this.clearModifiedGlobals();
 
                 // has the player tampered with any functions?
                 try {
@@ -340,7 +342,7 @@ export default class Game {
             validatedStartLevel(this.map);
 
             //deal with sneaky players
-            //this.clearModifiedGlobals();
+            this.clearModifiedGlobals();
 
             // draw the map
             this.display.fadeIn(this.map, isNewLevel ? 100 : 10, () => {
@@ -427,13 +429,13 @@ export default class Game {
     };
 
     // setInventoryStateByLevel (levelNum) {
-    //     // first remove items that have onDrop effects on UI
-    //     if (levelNum == 1) {
-    //         this.removeFromInventory('computer');
-    //     }
-    //     if (levelNum <= 7) {
-    //         this.removeFromInventory('phone');
-    //     }
+    //     // // first remove items that have onDrop effects on UI
+    //     // if (levelNum == 1) {
+    //     //     this.removeFromInventory('computer');
+    //     // }
+    //     // if (levelNum <= 7) {
+    //     //     this.removeFromInventory('phone');
+    //     // }
 
     //     // clear any remaining items from inventory
     //     this.inventory = [];
@@ -560,6 +562,11 @@ export default class Game {
     //     }, 'text');
     // };
 
+    _restartLevel () {
+        this.getLevel(this._currentLevel, true);
+    };
+
+
     resetLevel(level) {
         let game = this;
         let resetTimeout_msec = 2500;
@@ -603,10 +610,17 @@ export default class Game {
         }
     };
 
+    clearModifiedGlobals () {
+        for (let p in window) {
+            if (window.propertyIsEnumerable(p) && this._globalVars.indexOf(p) == -1) {
+                window[p] = null;
+            }
+        }
+    };
 
-
-
-
+    displayChapter(chapterName, cssClass) {
+        this.app.displayChapter(chapterName, cssClass);
+    }
 
 
 }
