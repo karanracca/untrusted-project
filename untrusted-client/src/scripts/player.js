@@ -189,10 +189,10 @@ export default function Player(x, y, __map, __game) {
     }, this);
 
     this.killedBy = wrapExposedMethod(function (killer) {
-        __game.sound.playSound('hurt');
+        //__game.sound.playSound('hurt');
         __game._restartLevel();
 
-        __map.displayChapter('You have been killed by \n' + killer + '!', 'death');
+        __game.displayChapter('You have been killed by \n' + killer + '!', 'death');
     }, this);
 
     this.hasItem = wrapExposedMethod(function (itemName) {

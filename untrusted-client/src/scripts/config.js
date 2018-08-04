@@ -2,24 +2,14 @@ import axios from 'axios';
 
 export const levelFileNames = ['01_cellBlockA.jsx', '02_theLongWayOut.jsx', '03_validationEngaged.jsx', '04_multiplicity.jsx', '05_minesweeper.jsx', '06_drones101.jsx', '07_colors.jsx', '08_intoTheWoods.jsx', '09_fordingTheRiver.jsx', '10_ambush.jsx', '11_robot.jsx', '12_robotNav.jsx', '13_robotMaze.jsx', '14_crispsContest.jsx', '15_exceptionalCrossing.jsx', '16_lasers.jsx', '17_pointers.jsx', '18_superDrEvalBros.jsx', '19_documentObjectMadness.jsx', '20_bossFight.jsx', '21_endOfTheLine.jsx', '22_credits.jsx'];
 
-export const APIAuth = axios.create({
-    baseURL: 'http://localhost:63174/api',
-    headers: {'Authentication': localStorage.getItem('token')}
-});
+// export const APIAuth = axios.create({
+//     baseURL: 'http://localhost:63174/api',
+//     headers: {'Authentication': localStorage.getItem('token')}
+// });
 
-export const API = axios.create({
-    baseURL: 'http://localhost:63174/api',
-});
-
-export function getAuthToken() {
-    return localStorage.getItem('token');
-}
-
-export const requestOptions = {
-    headers: {
-        'Authorization': localStorage.getItem('token')
-    }
-}
+// export const API = axios.create({
+//     baseURL: 'http://localhost:63174/api',
+// });
 
 export const viewableScripts = [
     'codeEditor.js',
@@ -95,15 +85,23 @@ export const verbotenWords = [
     'this[' // prevents this['win'+'dow'], etc.
 ];
 
+//Start- Related to API
+
 const BaseAPI = "http://localhost:63174/api";
 
-export const APIUnused = {
+export function getAuthToken() {
+    return localStorage.getItem('token');
+}
+
+export const API = {
     login: `${BaseAPI}/login`,
     register: `${BaseAPI}/users/createUser`,
     level: `${BaseAPI}/level`,
     leaderboard: `${BaseAPI}/users/leaderBoard`,
     updateLevel: `${BaseAPI}/level/updateLevel`
 }
+
+//End- Related to API
 
 export const referenceImplementations = {
     'map': {
