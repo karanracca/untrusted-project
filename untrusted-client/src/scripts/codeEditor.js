@@ -49,8 +49,8 @@ export default function CodeEditor(textAreaDomID, width, height, game) {
         endOfStartLevel = null;
         startOfStartLevel = null;
         var propertiesString = '';
-
-        var lineArray = codeString.split("\n");
+        codeString = codeString.replace(/"/g, '\'');
+        var lineArray = codeString.split("\\n");
         var inEditableBlock = false;
         var inPropertiesBlock = false;
 
@@ -311,16 +311,6 @@ export default function CodeEditor(textAreaDomID, width, height, game) {
 
         this.internalEditor.setSize(width, height);
 
-        // set up event handlers
-        // this.internalEditor.on("focus", function(instance) {
-        //     // implements yellow box when changing focus
-        //     $('.CodeMirror').addClass('focus');
-        //     $('#screen canvas').removeClass('focus');
-
-        //     $('#helpPane').hide();
-        //     $('#menuPane').hide();
-        // });
-
         this.internalEditor.on('cursorActivity', function (instance) {
             // fixes the cursor lag bug
             instance.refresh();
@@ -348,7 +338,6 @@ export default function CodeEditor(textAreaDomID, width, height, game) {
          * strip our notation from the string and as a side effect build up
          * a data structure of editable areas
          */
-
         this.internalEditor.off('beforeChange', enforceRestrictions);
         codeString = preprocess(codeString);
         this.internalEditor.setValue(codeString);

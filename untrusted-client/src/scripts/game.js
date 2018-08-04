@@ -41,7 +41,7 @@ export default class Game {
     set _setPlayerCodeRunning(pcr) { this._playerCodeRunning = pcr };
 
     initialize() {
-        let levelKey = this._mod.length == 0 ? 'levelReached' : this._mod + '.levelReached';
+        //let levelKey = this._mod.length == 0 ? 'levelReached' : this._mod + '.levelReached';
         this._levelReached = JSON.parse(localStorage.getItem('currentPlayer')).level.levelNo;
 
         // Initialize sound
@@ -73,38 +73,31 @@ export default class Game {
         //this.enableButtons();
         //this.setUpNotepad();
 
-        // Load help commands from local storage (if possible)
-        // if (localStorage.getItem(this._getLocalKey('helpCommands'))) {
-        //     __commands = localStorage.getItem(this._getLocalKey('helpCommands')).split(';');
-        // }
+        //Load help commands from local storage (if possible)
+        if (localStorage.getItem('helpCommands')) {
+            this._commands = localStorage.getItem('helpCommands').split(';');
+        }
 
         // Lights, camera, action
         if (this.startLevel > 1) {
             this._currentLevel = this.startLevel - 1;
             this.getLevel(this.startLevel);
-        // } else if (this._levelReached != 1) {
-        //     // load last level reached (unless it's the credits)
-        //     this.getLevel(Math.min(this._levelReached, 21));
-        // } 
         } else {
-            //this.display.playIntro(this.dimensions.height);
             this.getLevel(this.startLevel);
         }
 
         //Set up event handler
         document.getElementById(this.domElement).addEventListener('keydown', (e) => {
+            e.preventDefault();
             // directions for moving entities
-
             if (this.display._intro == true) {
                 this.display._intro = false;
                 this.start();
             } else if (config.keys[e.keyCode] && this.map.player) {
                 this.map.player.move(config.keys[e.keyCode], true);
             }
-            //e.preventDefault();
+            
         });
-
-        //this.display.playIntro(this.dimensions.height);
     };
 
     start(lvl) {
@@ -121,51 +114,19 @@ export default class Game {
 
         this._levelReached = Math.max(levelNum, this._levelReached);
 
-        //Store level in local storage
-        localStorage.setItem('levelReached', this._levelReached);
-
         let fileName =  config.levelFileNames[levelNum - 1];
-        let lvlCode = config.levels['levels/' + fileName];
-
-        // if (movingToNextLevel) {
-        //     // save level state and create a gist
-        //     editor.saveGoodState();
-        //     editor.createGist();
-        // }
+        //let lvlCode = config.levels['levels/' + fileName];
+        let lvlCode = JSON.parse(localStorage.getItem('currentPlayer')).level.layout;
 
         game._currentLevel = levelNum;
         game._currentBonusLevel = null;
         game._currentFile = null;
 
-        //TODO load level code in editor
-
+        //load level code in editor
         game.editor.loadCode(lvlCode);
-
-        // restored saved state for this level?
-        // if (!isResetting && editor.getGoodState(levelNum)) {
-        //     // unless the current level is a newer version
-        //     var newVer = editor.getProperties().version;
-        //     var savedVer = editor.getGoodState(levelNum).version;
-        //     if (!(newVer && (!savedVer || isNewerVersion(newVer, savedVer)))) {
-        //         // restore saved line/section/endOfStartLevel state if possible
-        //         if (editor.getGoodState(levelNum).endOfStartLevel) {
-        //             editor.setEndOfStartLevel(editor.getGoodState(levelNum).endOfStartLevel);
-        //         }
-        //         if (editor.getGoodState(levelNum).editableLines) {
-        //             editor.setEditableLines(editor.getGoodState(levelNum).editableLines);
-        //         }
-        //         if (editor.getGoodState(levelNum).editableSections) {
-        //             editor.setEditableSections(editor.getGoodState(levelNum).editableSections);
-        //         }
-
-        //         // restore saved code
-        //         editor.setCode(editor.getGoodState(levelNum).code);
-        //     }
-        // }
 
         // start the level and fade in
         game.evalLevelCode(null, null, true);
-        //game.display.focus();
 
         // store the commands introduced in this level (for api reference)
         this._commands = util.unique(this._commands.concat(editor.getProperties().commandsIntroduced));
@@ -328,13 +289,6 @@ export default class Game {
                 this.editor.saveGoodState();
             }
 
-            // clear drawing canvas and hide it until level loads
-            // var screenCanvas = $('#screen canvas')[0];
-            // $('#drawingCanvas')[0].width = screenCanvas.width;
-            // $('#drawingCanvas')[0].height = screenCanvas.height;
-            // $('#drawingCanvas').hide();
-            // $('#dummyDom').hide();
-
             // set correct inventory state
             //this.setInventoryStateByLevel(this._currentLevel);
 
@@ -349,15 +303,6 @@ export default class Game {
 
                 //this.map.refresh(); // refresh inventory display
 
-                // // show map overlays if necessary
-                // if (game.map._properties.showDrawingCanvas) {
-                //     $('#drawingCanvas').show();
-                // } else if (game.map._properties.showDummyDom) {
-                //     $('#dummyDom').show();
-                // }
-
-                // workaround because we can't use writeStatus() in startLevel()
-                // (due to the text getting overwritten by the fade-in)
                 if (this.editor.getProperties().startingMessage) {
                     this.display.writeStatus(game.editor.getProperties().startingMessage);
                 }
@@ -378,7 +323,6 @@ export default class Game {
             //finally, allow player movement
             if (this.map.player) {
                 this.map.player._canMove = true;
-                //game.display.focus();
             }
         } else { // code is invalid
             // play error sound
@@ -506,9 +450,7 @@ export default class Game {
         this.map.player._canMove = false;
 
         if (this._currentLevel == 'bonus') {
-            // open main menu
-            $('#helpPane, #notepadPane').hide();
-            $('#menuPane').show();
+            console.log("In bonus level")
         } else {
             //this.getLevel(this._currentLevel + 1, false, true);
             this.app.levelComplete(this._currentLevel);

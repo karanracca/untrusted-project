@@ -43,7 +43,7 @@ export default class Register extends Component {
             }
         }).catch(error => {
             console.log(error);
-            this.setState({showError: true, error: error.response.data || "Something went wrong, please try again" })
+            this.setState({showError: true, error: error.response && error.response.data || "Something went wrong, please try again" })  
         })
     }
 
