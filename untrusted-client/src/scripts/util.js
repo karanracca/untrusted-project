@@ -121,10 +121,12 @@ export function getListOfObjects (__game) {
             'symbol': String.fromCharCode(0x260E), // ☎
             'onPickUp': function (player) {
                 game.map.writeStatus('You have picked up the function phone!');
-                $('#phoneButton').show();
+                game.app.showPhone();
+                //$('#phoneButton').show();
+
             },
             'onDrop': function () {
-                $('#phoneButton').hide();
+                //$('#phoneButton').hide();
             }
         },
 
@@ -204,5 +206,29 @@ export function getListOfObjects (__game) {
         }
     };
 };
+
+const moveToward = (obj, type) => {
+    let target = obj.findNearest(type);
+    let leftDist = obj.getX() - target.x;
+    let upDist = obj.getY() - target.y;
+
+    let direction;
+    if (upDist == 0 && leftDist == 0) {
+        return;
+    }
+    if (upDist > 0 && upDist >= leftDist) {
+        direction = 'up';
+    } else if (upDist < 0 && upDist < leftDist) {
+        direction = 'down';
+    } else if (leftDist > 0 && leftDist >= upDist) {
+        direction = 'left';
+    } else {
+        direction = 'right';
+    }
+
+    if (obj.canMove(direction)) {
+        obj.move(direction);
+    }
+}
 
 

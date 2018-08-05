@@ -51,7 +51,7 @@ export default class DynamicObject {
         if (this.__game.isPlayerCodeRunning) { throw 'Forbidden method call: object._onTurn()';}
 
         let me = this;
-        let player = map.player;
+        let player = this._map.player;
 
         function executeTurn() {
             this.__myTurn = true;
@@ -71,10 +71,10 @@ export default class DynamicObject {
                     }
                 }
 
-                if (__myTurn && this.__definition.behavior) {
-                    map._validateCallback(function () {
+                if (this.__myTurn && this.__definition.behavior) {
+                    this._map._validateCallback(function () {
                         this.__definition.behavior(me, player);
-                    });
+                    }.bind(this));
                 }
             } catch (e) {
                 // throw e; // for debugging
@@ -102,7 +102,7 @@ export default class DynamicObject {
                 }
             }
         } else {
-            executeTurn();
+            executeTurn.call(this);
         }
     };
 
@@ -110,11 +110,11 @@ export default class DynamicObject {
         if (this.__game.isPlayerCodeRunning) { throw 'Forbidden method call: object._afterMove()';}
 
         // try to pick up items
-        let objectName = map.grid()[this.__x][this.__y].type;
-        let object = map.getObjectDefinition(objectName);
+        let objectName = this._map._grid[this.__x][this.__y].type;
+        let object = this._map.getObjectDefinition(objectName);
         if (object.type === 'item' && !this.__definition.projectile) {
             this.__inventory.push(objectName);
-            map._removeItemFromMap(this.__x, this.__y, objectName);
+            this._map._removeItemFromMap(this.__x, this.__y, objectName);
             //map._playSound('pickup');
         } else if (object.type === 'trap') {
             // this part is used by janosgyerik's bonus levels
@@ -122,7 +122,7 @@ export default class DynamicObject {
                 if (typeof(object.onDeactivate) === 'function') {
                     object.onDeactivate();
                 }
-                map._removeItemFromMap(this.__x, this.__y, objectName);
+                this._map._removeItemFromMap(this.__x, this.__y, objectName);
             }
         }
     };
@@ -136,16 +136,16 @@ export default class DynamicObject {
         clearInterval(this.__timer);
 
         // remove this object from map's __dynamicObjects list
-        map._refreshDynamicObjects();
+        this._map._refreshDynamicObjects();
 
         // unless the map is being reset, play an explosion
         // and call this object's onDestroy method
         if (this.__definition.onDestroy && !onMapReset) {
             if (!this.__definition.projectile) {
-                map._playSound('explosion');
+                //map._playSound('explosion');
             }
 
-            map._validateCallback(function () {
+            this._map._validateCallback(function () {
                 this.__definition.onDestroy(me);
             });
         }
@@ -179,23 +179,23 @@ export default class DynamicObject {
             throw 'Can\'t move when it isn\'t your turn!';
         }
 
-        let nearestObj = map._findNearestToPoint("anyDynamic", dest.x, dest.y);
+        let nearestObj = this._map._findNearestToPoint("anyDynamic", dest.x, dest.y);
 
         // check for collision with player
-        if (map.player.atLocation(dest.x, dest.y) &&
+        if (this._map.player.atLocation(dest.x, dest.y) &&
                 (this.__definition.onCollision || this.__definition.projectile)) {
             // trigger collision
             if (this.__definition.projectile) {
                 // projectiles automatically kill
-                map.getPlayer().killedBy('a ' + this.__type);
+                this._map.player.killedBy('a ' + this.__type);
             } else {
-                this.__definition.onCollision(map.getPlayer(), this);
+                this.__definition.onCollision(this._map.player, this);
             }
-        } else if (map._canMoveTo(dest.x, dest.y, this.__type) &&
-                !map._isPointOccupiedByDynamicObject(dest.x, dest.y)) {
+        } else if (this._map._canMoveTo(dest.x, dest.y, this.__type) &&
+                !this._map._isPointOccupiedByDynamicObject(dest.x, dest.y)) {
             // move the object
-            this.this.__x = dest.x;
-            this.this.__y = dest.y;
+            this.__x = dest.x;
+            this.__y = dest.y;
             this._afterMove(this.__x, this.__y);
         } else {
             // cannot move
@@ -204,8 +204,8 @@ export default class DynamicObject {
                 this._destroy();
 
                 // projectiles also destroy any dynamic objects they touch
-                if (map._isPointOccupiedByDynamicObject(dest.x, dest.y)) {
-                    map._findDynamicObjectAtPoint(dest.x, dest.y)._destroy();
+                if (this._map._isPointOccupiedByDynamicObject(dest.x, dest.y)) {
+                    this._map._findDynamicObjectAtPoint(dest.x, dest.y)._destroy();
                 }
             }
         }
@@ -218,12 +218,12 @@ export default class DynamicObject {
 
         // check if the object can move there and will not collide with
         // another dynamic object
-        return (map._canMoveTo(dest.x, dest.y, this.__type) &&
-            !map._isPointOccupiedByDynamicObject(dest.x, dest.y));
+        return (this._map._canMoveTo(dest.x, dest.y, this.__type) &&
+            !this._map._isPointOccupiedByDynamicObject(dest.x, dest.y));
     };
 
     findNearest (type) {
-        return map._findNearestToPoint(type, this.__x, this.this.__y);
+        return this._map._findNearestToPoint(type, this.__x, this.__y);
     };
 
     // only for teleporters

@@ -1,7 +1,7 @@
 import React, { Component } from "react";
 import './leaderboard.css';
 import axios from 'axios';
-import { API } from '../../scripts/config';
+import * as config  from '../../scripts/config';
 
 class Leaderboard extends Component {
 
@@ -13,7 +13,13 @@ class Leaderboard extends Component {
     }
 
     componentDidMount() {
-        axios.get(API.leaderboard).then(res => this.setState({ leaderboard: res.data }));
+        let options = {headers:{'Authorization': config.getAuthToken()}}
+        axios.get(config.API.leaderboard, options).then(res => {
+            if (res.status === 200)
+            this.setState({ leaderboard: res.data })
+        }).catch(err => {
+            console.log(err);
+        });
     }
 
     close() {
@@ -30,7 +36,7 @@ class Leaderboard extends Component {
                         <tr><th>Name</th><th>Level</th><th>Score</th></tr>
                         {this.state.leaderboard.map((player, i) => {
                             return (<tr key={i}>
-                                <td>{player.firstName + player.lastName}</td>
+                                <td>{player.fullname}</td>
                                 <td>{player.level}</td>
                                 <td>{player.score}</td>
                             </tr>)

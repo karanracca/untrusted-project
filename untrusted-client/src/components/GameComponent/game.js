@@ -8,7 +8,6 @@ import 'codemirror/lib/codemirror.css';
 import HelpPane from '../HelpComponent/helpPane';
 import axios from 'axios';
 import Leaderboard from "../LeaderboardComponent/leaderboard";
-import { API } from '../../scripts/config';
 import * as config  from '../../scripts/config';
 import Sound from "../../scripts/sound";
 
@@ -29,6 +28,7 @@ class App extends Component {
             showLeaderboard: false,
             chapter: '',
             showEditor: false,
+            showPhone: false,
             user: localStorage.getItem('currentPlayer') ? JSON.parse(localStorage.getItem('currentPlayer')) : props.history.push('/login'),
             sound: new Sound('local')
         }
@@ -49,7 +49,7 @@ class App extends Component {
 
     levelComplete(currentLevel) {
         let options = {headers:{'Authorization': config.getAuthToken()}}
-        axios.get(API.updateLevel, options).then(response => {
+        axios.get(config.API.updateLevel, options).then(response => {
             localStorage.setItem('token', response.data.token);
             localStorage.setItem('currentPlayer', JSON.stringify(response.data.user));
             this.setState({user: JSON.parse(localStorage.getItem('currentPlayer'))})
@@ -61,10 +61,11 @@ class App extends Component {
         })
     }
 
-    drawInventory(item) {
-        let inv = this.state.inventory.slice(0);
-        item = this.state.game.map.getObjectDefinition(item);
-        inv.push(item);
+    drawInventory() {
+        //let inv = this.state.inventory.slice(0);
+        //item = this.state.game.map.getObjectDefinition(item);
+        //inv.push(item);
+        let inv = this.state.game.inventory;
         this.setState({ inventory: inv });
     }
 
@@ -101,6 +102,14 @@ class App extends Component {
         this.setState({showEditor: true});
     }
 
+    showPhone() {
+        this.setState({showPhone: true});
+    }
+
+    usePhone() {
+        this.state.game.usePhone();
+    }
+
     displayChapter(message, cssClass) {
         this.setState({
             chapter: message,
@@ -117,7 +126,7 @@ class App extends Component {
 
     render() {
 
-        const {showEditor, inventory} = this.state;
+        const {showEditor, inventory, showPhone} = this.state;
 
         return (<div>
             {this.state.user !== null ?
@@ -172,6 +181,12 @@ class App extends Component {
                                     <span className="keys">^2</span> Leaderboard
                                 </a>
                             </span>
+                            {showPhone? <span className="editor-btn" onClick={() => this.usePhone()}>
+                                <a id="phoneButton" title="Q: Use Phone">
+                                    <span className="keys"> Q</span>Phone
+                                </a>
+                            </span> : null
+                            }
                         </div>
                     </div>
                     {this.state.showHelp && this.state.game.helpCommands ? <HelpPane help={this.state.game.helpCommands} close={this.closeHelp.bind(this)}></HelpPane> : null}

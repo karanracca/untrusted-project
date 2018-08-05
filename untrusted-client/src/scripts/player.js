@@ -203,7 +203,7 @@ export default function Player(x, y, __map, __game) {
         var object = __game.objects[itemName];
 
         __game.removeFromInventory(itemName);
-        __game.sound.playSound('blip');
+        //__game.sound.playSound('blip');
     }, this);
 
     this.setPhoneCallback = wrapExposedMethod(function(func) {
