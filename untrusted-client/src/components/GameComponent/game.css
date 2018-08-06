@@ -13,6 +13,15 @@
 	cursor: pointer;
 }
 
+.reset-btn{
+	position: absolute;
+	bottom: 2%;
+	right: 2%;
+	font-size: 1rem;
+	text-decoration: underline;
+	cursor: pointer;
+}
+
 .welcome-user{
 	position: absolute;
 	top: 2%;

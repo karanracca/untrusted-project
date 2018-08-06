@@ -46,6 +46,39 @@ class Game extends Component {
         });
     }
 
+    fetchUserData() {
+        let options = { headers: { 'Authorization': config.getAuthToken() } }
+        this.setState({ laoding: true }, () => {
+            axios.get(config.API.updateLevel, options).then(response => {
+                localStorage.setItem('token', response.data.token);
+                localStorage.setItem('currentPlayer', JSON.stringify(response.data.user));
+                this.setState({ user: JSON.parse(localStorage.getItem('currentPlayer')), laoding: false })
+            }).catch(error => {
+                this.setState({ loading: false });
+                console.log(error);
+            })
+        })
+    }
+
+    startNewGame() {
+        let startLevel = this.state.user.level.levelNo;
+        if (startLevel > 1) this.setState({ showEditor: true });
+        let game = new GameScript(startLevel, "screen", this);
+
+        this.setState({ game }, () => {
+            this.state.game.initialize();
+            // contentEditable is required for canvas elements to detect keyboard events
+            this.state.game.display.getContainer().setAttribute("contentEditable", "true");
+            //clear all child of node
+            let node = document.getElementById("screen");
+            while (node.firstChild) node.removeChild(node.firstChild);
+
+            node = document.getElementById("editor");
+            while (node.firstChild) node.removeChild(node.firstChild);
+            document.getElementById("screen").appendChild(this.state.game.display.getContainer());
+        });
+    }
+
     levelComplete(currentLevel) {
         if (currentLevel < 10) {
             let options = { headers: { 'Authorization': config.getAuthToken() } }
@@ -65,6 +98,22 @@ class Game extends Component {
         } else if (currentLevel === 10) {
             this.props.history.push('/winner');
         }
+    }
+
+    resetGame() {
+        let options = { headers: { 'Authorization': config.getAuthToken() } }
+        this.setState({ laoding: true }, () => {
+            axios.get(config.API.reset, options).then(response => {
+                // this.fetchUserData();
+                // this.startNewGame();
+                // this.setState({ loading: false });
+                // console.log(response)
+                this.props.history.push("/login");
+            }).catch(error => {
+                this.setState({ loading: false });
+                console.log(error);
+            })
+        });
     }
 
     drawInventory() {
@@ -143,6 +192,7 @@ class Game extends Component {
                 <div className="main-title">
                     <span>The Advantures of Dr. Eval</span>
                 </div>
+
                 {this.state.user !== null ? <div>
                     <span className="user-level">Level-{this.state.user.level.levelNo}</span>
                     <span className="user-score">Score-{this.state.user.score}</span>
@@ -200,6 +250,8 @@ class Game extends Component {
                     </div>
                 </div>
                 <span onClick={() => { this.logout() }} className="logout-btn"><a>Logout</a></span>
+
+                <span onClick={() => { this.resetGame() }} className="reset-btn"><a>Reset Game</a></span>
             </div>);
         } else {
             return (<Loading />)

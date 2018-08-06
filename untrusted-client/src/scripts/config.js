@@ -88,7 +88,8 @@ export const API = {
     register: `${BaseAPI}/users/createUser`,
     level: `${BaseAPI}/level`,
     leaderboard: `${BaseAPI}/users/leaderBoard`,
-    updateLevel: `${BaseAPI}/level/updateLevel`
+    updateLevel: `${BaseAPI}/level/updateLevel`,
+    reset: `${BaseAPI}/users/resetLevel`
 }
 
 //End- Related to API
