@@ -33,7 +33,6 @@ export default class Game {
         this._levelReached = 1;
         this._displayedChapters = [];
         this._globalVars = [];
-        this._eval = window.eval;// store our own copy of eval so that we can override window.eval
     }
 
     get helpCommands() { return this._commands; };
@@ -41,12 +40,7 @@ export default class Game {
     set _setPlayerCodeRunning(pcr) { this._playerCodeRunning = pcr };
 
     initialize() {
-        //let levelKey = this._mod.length == 0 ? 'levelReached' : this._mod + '.levelReached';
         this._levelReached = JSON.parse(localStorage.getItem('currentPlayer')).level.levelNo;
-
-        // Initialize sound
-        // this.sound = new Sound('local');
-        // this.sound = new Sound(debugMode ? 'local' : 'cloudfront');
 
         this.display = new RotDisplay({
             width: this.dimensions.width,
@@ -57,21 +51,15 @@ export default class Game {
         // Initialize editor, map, and objects
         this.editor = new CodeEditor("editor", 600, 500, this);
         this.map = new GameMap(this.display, this);
-        //this.objects = this.getListOfObjects();
 
         // Initialize validator
         this.saveReferenceImplementations(); // prevents tampering with methods
-         // keep track of current global variables
+        // keep track of current global variables
         for (let p in window) {
             if (window.propertyIsEnumerable(p)) {
                 this._globalVars.push(p);
             }
         }
-
-        // Enable controls
-        //this.enableShortcutKeys();
-        //this.enableButtons();
-        //this.setUpNotepad();
 
         //Load help commands from local storage (if possible)
         if (localStorage.getItem('helpCommands')) {
@@ -90,13 +78,9 @@ export default class Game {
         document.getElementById(this.domElement).addEventListener('keydown', (e) => {
             e.preventDefault();
             // directions for moving entities
-            if (this.display._intro == true) {
-                this.display._intro = false;
-                this.start();
-            } else if (config.keys[e.keyCode] && this.map.player) {
+            if (config.keys[e.keyCode] && this.map.player) {
                 this.map.player.move(config.keys[e.keyCode], true);
             }
-            
         });
     };
 
@@ -190,8 +174,7 @@ export default class Game {
                     this.detectTampering(this.map, this.map.player);
                 } catch (e) {
                     this.display.appendError(e.toString(), "%c{red}Validation failed! Please reload the level.");
-                    // play error sound
-                    //this.sound.playSound('static');
+                    
                     // disable player movement
                     this.map.player._canMove = false;
                     this.map._callbackValidationFailed = true;
@@ -228,10 +211,6 @@ export default class Game {
     };
 
     detectTampering (map, player) {
-        // once the super menu is activated, we don't care anymore!
-        // if (this._superMenuActivated) {
-        //     return;
-        // }
 
         for (let f in config.referenceImplementations.map) {
             if (config.referenceImplementations.map.hasOwnProperty(f) && map[f]) {
@@ -271,9 +250,6 @@ export default class Game {
             return;
         }
 
-        //save current display state (for scrolling up later)
-        //this.display.saveGrid(this.map);
-
         // validate the code if it passes validation, returns the startLevel function else returns false
         let validatedStartLevel = ValidateCode(allCode, playerCode, restartingLevelFromScript, this);
 
@@ -311,23 +287,11 @@ export default class Game {
 
             this.map.ready();
 
-            // start bg music for this level
-            // if (this.editor.getProperties().music) {
-            //     this.sound.playTrackByName(this.editor.getProperties().music);
-            // }
-
-            // // activate super menu if 21_endOfTheLine has been reached
-            // if (this._levelReached >= 21) {
-            //     this.activateSuperMenu();
-            // }
-
             //finally, allow player movement
             if (this.map.player) {
                 this.map.player._canMove = true;
             }
         } else { // code is invalid
-            // play error sound
-            //this.sound.playSound('static');
             // disable player movement
             this.map.player._canMove = false;
         }
@@ -456,53 +420,6 @@ export default class Game {
         }
     };
 
-    // this._jumpToNthLevel = function (levelNum) {
-    //     this._currentFile = null;
-    //     this._getLevel(levelNum, false, false);
-    //     this.display.focus();
-    //     this.sound.playSound('blip');
-    // };
-
-    // this._getLevelByPath = function (filePath) {
-    //     var game = this;
-    //     var editor = this.editor;
-
-    //     $.get(filePath, function (lvlCode) {
-    //         game._currentLevel = 'bonus';
-    //         game._currentBonusLevel = filePath.split("levels/")[1];
-    //         game._currentFile = null;
-
-    //         // load level code in editor
-    //         editor.loadCode(lvlCode);
-
-    //         // start the level and fade in
-    //         game._evalLevelCode(null, null, true);
-    //         game.display.focus();
-
-    //         // store the commands introduced in this level (for api reference)
-    //         __commands = __commands.concat(editor.getProperties().commandsIntroduced).unique();
-    //         localStorage.setItem(this._getLocalKey('helpCommands'), __commands.join(';'));
-    //     }, 'text');
-
-    // };
-
-    // // how meta can we go?
-    // this._editFile = function (filePath) {
-    //     var game = this;
-
-    //     var fileName = filePath.split('/')[filePath.split('/').length - 1];
-    //     game._currentFile = filePath;
-
-    //     $.get(filePath, function (code) {
-    //         // load level code in editor
-    //         if (game._editableScripts.indexOf(fileName) > -1) {
-    //             game.editor.loadCode('#BEGIN_EDITABLE#\n' + code + '\n#END_EDITABLE#');
-    //         } else {
-    //             game.editor.loadCode(code);
-    //         }
-    //     }, 'text');
-    // };
-
     _restartLevel () {
         this.getLevel(this._currentLevel, true);
     };
@@ -533,12 +450,6 @@ export default class Game {
             }, resetTimeout_msec);
         }
     };
-
-    // // restart level with currently loaded code
-    // this._restartLevel = function () {
-    //     this.editor.setCode(__currentCode);
-    //     this._evalLevelCode();
-    // };
 
     callUnexposedMethod(f) {
         if (this._playerCodeRunning) {

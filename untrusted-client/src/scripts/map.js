@@ -67,6 +67,16 @@ export default class Map {
         }
     };
 
+    displayChapter(chapterName, cssClass) {
+        this.game.displayChapter(chapterName, cssClass);
+    }
+
+    writeStatus(status) {
+        setTimeout(function (that) {
+            that.display.writeStatus(status);
+        }, 100, this);
+    };
+
     reset() {
         if (this.game.isPlayerCodeRunning) { throw 'Forbidden method call: map._reset()'; }
 
@@ -96,12 +106,6 @@ export default class Map {
         this._dom = '';
         this._overrideKeys = {};
 
-        //TODO
-        // preload stylesheet for DOM level
-        // $.get('styles/dom.css', function (css) {
-        //     __domCSS = css;
-        // });
-
         this.finalLevel = false;
         this._callbackValidationFailed = false;
     };
@@ -116,47 +120,8 @@ export default class Map {
         };
     };
 
-    //     /* unexposed getters */
-
-    //     
-    //     this._getGrid = function () {
-    //         if (__game._isPlayerCodeRunning()) { throw 'Forbidden method call: map._getGrid()';}
-    //         return __grid;
-    //     };
-    //     this._getLines = function() {
-    //         if (__game._isPlayerCodeRunning()) { throw 'Forbidden method call: map._getLines()';}
-    //         return __lines;
-    //     };
-
-    //     /* exposed getters */
-
-    //     this.getDynamicObjects = function () { return __dynamicObjects; };
-    //     this.getPlayer = function () { return __player; };
-    //     
-
-    //     /* unexposed methods */
-
     ready() {
-
         if (this.game.isPlayerCodeRunning) { throw 'Forbidden method call: map._ready()'; }
-
-        // // set refresh rate if one is specified
-        // if (__refreshRate) {
-        //     map.startTimer(function () {
-        //         // refresh the map
-        //         map.refresh();
-
-        //         // rewrite status
-        //         if (map._status) {
-        //             map.writeStatus(map._status);
-        //         }
-
-        //         // check for nonstandard victory condition
-        //         if (typeof(__game.objective) === 'function' && __game.objective(map)) {
-        //             __game._moveToNextLevel();
-        //         }
-        //     }, __refreshRate);
-        // }
     };
 
     _canMoveTo(x, y, myType) {
@@ -258,27 +223,8 @@ export default class Map {
         return false;
     };
 
-    //     this._findDynamicObjectAtPoint = function (x, y) {
-    //         if (__game._isPlayerCodeRunning()) { throw 'Forbidden method call: map._findDynamicObjectAtPoint()';}
-
-    //         var x = Math.floor(x); var y = Math.floor(y);
-
-    //         for (var i = 0; i < this.getDynamicObjects().length; i++) {
-    //             var object = this.getDynamicObjects()[i];
-    //             if (object.getX() === x && object.getY() === y) {
-    //                 return object;
-    //             }
-    //         }
-    //         return false;
-    //     };
-
     _moveAllDynamicObjects() {
         if (this.game.isPlayerCodeRunning) { throw 'Forbidden method call: map._moveAllDynamicObjects()'; }
-
-        // the way things work right now, teleporters must take precedence
-        // over all other objects -- otherwise, pointers.jsx will not work
-        // correctly.
-        // TODO: make this not be the case
 
         // "move" teleporters
         this._dynamicObjects.filter(function (object) {
@@ -321,14 +267,6 @@ export default class Map {
 
     _hideChapter() {
         if (this.game.isPlayerCodeRunning) { throw 'Forbidden method call: map._hideChapter()'; }
-
-        // start fading out chapter immediately
-        // unless it's a death message, in which case wait 2.5 sec
-        // clearInterval(this.chapterHideTimeout);
-        // this.chapterHideTimeout = setTimeout(function () {
-        //     $('#chapter').fadeOut(1000);
-        // }, $('#chapter').hasClass('death') ? 2500 : 0);
-
         // also, clear any status text if map is refreshing automatically (e.g. boss level)
         this._status = '';
     };
@@ -339,14 +277,6 @@ export default class Map {
         this._dynamicObjects = this._dynamicObjects.filter(function (obj) { return !obj.isDestroyed(); });
     };
 
-    //     this._countTimers = function() {
-    //         if (__game._isPlayerCodeRunning()) { throw 'Forbidden method call: map._countTimers()';}
-
-    //         return __intervals.length;
-    //     }
-
-    //     /* (unexposed) wrappers for game methods */
-
     _startOfStartLevelReached() {
         this.game._startOfStartLevelReached = true;
     };
@@ -354,12 +284,6 @@ export default class Map {
     _endOfStartLevelReached() {
         this.game._endOfStartLevelReached = true;
     };
-
-    //     this._playSound = function (sound) {
-    //         if (__game._isPlayerCodeRunning()) { throw 'Forbidden method call: map._playSound()';}
-
-    //         __game.sound.playSound(sound);
-    //     };
 
     _validateCallback(callback) {
         if (this.game.isPlayerCodeRunning) { throw 'Forbidden method call: map._validateCallback()'; }
@@ -480,162 +404,6 @@ export default class Map {
             return '';
     };
 
-    //     this.getAdjacentEmptyCells = wrapExposedMethod(function (x, y) {
-    //         var x = Math.floor(x); var y = Math.floor(y);
-
-    //         var map = this;
-    //         var actions = ['right', 'down', 'left', 'up'];
-    //         var adjacentEmptyCells = [];
-    //         $.each(actions, function (i, action) {
-    //             switch (actions[i]) {
-    //                 case 'right':
-    //                     var child = [x+1, y];
-    //                     break;
-    //                 case 'left':
-    //                     var child = [x-1, y];
-    //                     break;
-    //                 case 'down':
-    //                     var child = [x, y+1];
-    //                     break;
-    //                 case 'up':
-    //                     var child = [x, y-1];
-    //                     break;
-    //             }
-    //             // Bazek: We need to check, if child is inside of map!
-    //             var childInsideMap = child[0] >= 0 && child[0] < map.getWidth() && child[1] >= 0 && child[1] < map.getHeight();
-    //             if (childInsideMap && map.getObjectTypeAt(child[0], child[1]) === 'empty') {
-    //                 adjacentEmptyCells.push([child, action]);
-    //             }
-    //         });
-    //         return adjacentEmptyCells;
-    //     }, this);
-
-    //     this.startTimer = wrapExposedMethod(function(timer, delay) {
-    //         if (!delay) {
-    //             throw "startTimer(): delay not specified"
-    //         } else if (delay < 25) {
-    //             throw "startTimer(): minimum delay is 25 milliseconds";
-    //         }
-
-    //         __intervals.push(setInterval(timer, delay));
-    //     }, this);
-
-    //     this.timeout = wrapExposedMethod(function(timer, delay) {
-    //         if (!delay) {
-    //             throw "timeout(): delay not specified"
-    //         } else if (delay < 25) {
-    //             throw "timeout(): minimum delay is 25 milliseconds";
-    //         }
-
-    //         __intervals.push(setTimeout(timer, delay));
-    //     }, this);
-
-    //     // this.displayChapter = wrapExposedMethod(function(chapterName, cssClass) {
-    //     //     if (__game._displayedChapters.indexOf(chapterName) === -1) {
-    //     //         $('#chapter').html(chapterName.replace("\n","<br>"));
-    //     //         $('#chapter').removeClass().show();
-
-    //     //         if (cssClass) {
-    //     //             $('#chapter').addClass(cssClass);
-    //     //         } else {
-    //     //             __game._displayedChapters.push(chapterName);
-    //     //         }
-
-    //     //         setTimeout(function () {
-    //     //             $('#chapter').fadeOut();
-    //     //         }, 5 * 1000);
-    //     //     }
-    //     // }, this);
-
-    displayChapter(chapterName, cssClass) {
-        this.game.displayChapter(chapterName, cssClass);
-    }
-
-    writeStatus(status) {
-        //this._status = status;
-        // if (__refreshRate) {
-        //     // write the status immediately
-        //     this.display.writeStatus(status);
-        // } else {
-        //     // wait 100 ms for redraw reasons
-        //     setTimeout(function () {
-        //         display.writeStatus(status);
-        //     }, 100);
-        // }
-        setTimeout(function (that) {
-            that.display.writeStatus(status);
-        }, 100, this);
-    };
-
-    //     // used by validators
-    //     // returns true iff called at the start of the level (that is, on DummyMap)
-    //     // returns false iff called by validateCallback (that is, on the actual map)
-    //     this.isStartOfLevel = wrapExposedMethod(function () {
-    //         return this._dummy;
-    //     }, this);
-
-    //     /* canvas-related stuff */
-
-    //     this.getCanvasContext = wrapExposedMethod(function() {
-    //         return $('#drawingCanvas')[0].getContext('2d');
-    //     }, this);
-
-    // getCanvasCoords(obj) {
-    //     var canvas = $('#drawingCanvas')[0];
-    //     return {
-    //         x: (obj.getX() + 0.5) * canvas.width / __game._dimensions.width,
-    //         y: (obj.getY() + 0.5) * canvas.height / __game._dimensions.height
-    //     };
-    // }
-
-    //     this.getRandomColor = wrapExposedMethod(function(start, end) {
-    //         var mean = [
-    //             Math.floor((start[0] + end[0]) / 2),
-    //             Math.floor((start[1] + end[1]) / 2),
-    //             Math.floor((start[2] + end[2]) / 2)
-    //         ];
-    //         var std = [
-    //             Math.floor((end[0] - start[0]) / 2),
-    //             Math.floor((end[1] - start[1]) / 2),
-    //             Math.floor((end[2] - start[2]) / 2)
-    //         ];
-    //         return ROT.Color.toHex(ROT.Color.randomize(mean, std));
-    //     }, this);
-
-    //     this.createLine = wrapExposedMethod(function(start, end, callback) {
-    //         __lines.push({'start': start, 'end': end, 'callback': callback});
-    //     }, this);
-
-    // testLineCollisions(player) {
-    //     let threshold = 7;
-    //     // let playerCoords = this.getCanvasCoords(player);
-    //     // __lines.forEach(function (line) {
-    //     //     if (pDistance(playerCoords.x, playerCoords.y,
-    //     //         line.start[0], line.start[1],
-    //     //         line.end[0], line.end[1]) < threshold) {
-    //     //         line.callback(__player);
-    //     //     }
-    //     // })
-    // }
-
-    //     /* for DOM manipulation level */
-
-    //     this.getDOM = wrapExposedMethod(function () {
-    //         return __dom;
-    //     })
-
-    //     this.createFromDOM = wrapExposedMethod(function(dom) {
-    //         __dom = dom;
-    //     }, this);
-
-    //     this.updateDOM = wrapExposedMethod(function(dom) {
-    //         __dom = dom;
-    //     }, this);
-
-    //     this.overrideKey = wrapExposedMethod(function(keyName, callback) {
-    //         this._overrideKeys[keyName] = callback;
-    //     }, this);
-
     //     /* validators */
 
     validateAtLeastXObjects(num, type) {
@@ -665,13 +433,6 @@ export default class Map {
             throw 'Too many dynamic objects on the map! Expected: ' + num + ', found: ' + count;
         }
     };
-
-    //     this.validateNoTimers = wrapExposedMethod(function() {
-    //         var count = this._countTimers();
-    //         if (count > 0) {
-    //             throw 'Too many timers set on the map! Expected: 0, found: ' + count;
-    //         }
-    //     }, this);
 
     validateAtLeastXLines(num) {
         let count = this._lines.length;

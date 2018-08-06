@@ -1,5 +1,4 @@
 import ROT from './rot';
-import * as util from './util';
 import * as config from './config';
 
 export default class GameDisplay extends ROT.Display {
@@ -7,7 +6,6 @@ export default class GameDisplay extends ROT.Display {
     constructor(opts, game) {
         opts.fontFamily = '"droid sans mono", Courier, "Courier New", monospace';
         super(opts);
-        //this.__display = null;
         this._grid = null;
         this._offset = 0;
         this._intro = false;
@@ -151,22 +149,6 @@ export default class GameDisplay extends ROT.Display {
             let x = Math.floor((w - str.length) / 2);
             let y = h + i - strings.length - 1;
             this.drawText(x, y, str);
-        }
-    };
-
-    playIntro (height, i) {
-        if (i < 0) {
-            this._intro = true;
-        } else {
-            if (typeof i === 'undefined') { i = height }
-            this.clear();
-            this.drawText(0, i - 2, "%c{#0f0}> initialize");
-            this.drawText(15, i + 3, "U N T R U S T E D");
-            this.drawText(20, i + 5, "- or - ");
-            this.drawText(5, i + 7, "THE CONTINUING ADVENTURES OF DR. EVAL");
-            this.drawText(3, i + 12, "a game by Alex Nisnevich and Greg Shuflin");
-            this.drawText(10, i + 22, "Press any key to begin ...");
-            setTimeout(this.playIntro(height, i - 1), 100);
         }
     };
 

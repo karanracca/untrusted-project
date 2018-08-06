@@ -1,15 +1,6 @@
-import axios from 'axios';
+
 
 export const levelFileNames = ['01_cellBlockA.jsx', '02_theLongWayOut.jsx', '03_validationEngaged.jsx', '04_multiplicity.jsx', '05_minesweeper.jsx', '06_drones101.jsx', '07_colors.jsx', '08_intoTheWoods.jsx', '09_fordingTheRiver.jsx', '10_ambush.jsx', '11_robot.jsx', '12_robotNav.jsx', '13_robotMaze.jsx', '14_crispsContest.jsx', '15_exceptionalCrossing.jsx', '16_lasers.jsx', '17_pointers.jsx', '18_superDrEvalBros.jsx', '19_documentObjectMadness.jsx', '20_bossFight.jsx', '21_endOfTheLine.jsx', '22_credits.jsx'];
-
-// export const APIAuth = axios.create({
-//     baseURL: 'http://localhost:63174/api',
-//     headers: {'Authentication': localStorage.getItem('token')}
-// });
-
-// export const API = axios.create({
-//     baseURL: 'http://localhost:63174/api',
-// });
 
 export const viewableScripts = [
     'codeEditor.js',
@@ -38,6 +29,17 @@ export const keys = {
     38: 'up', // up arrow
     39: 'right', // right arrow
     40: 'down', // down arrow
+    65: 'left', // A
+    68: 'right', // D
+    81: 'funcPhone', // Q
+    82: 'rest', // R
+    83: 'down', // S
+    87: 'up', // W
+    98: 'down', // 2
+    100: 'left', // 4
+    101: 'rest', // 5
+    102: 'right', // 6
+    104: 'up' // 8
 };
 
 export const levels = {
