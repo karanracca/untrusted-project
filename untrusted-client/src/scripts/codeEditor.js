@@ -119,6 +119,7 @@ export default function CodeEditor(textAreaDomID, width, height, game) {
         }
 
         try {
+            propertiesString = propertiesString.replace(/'/g,'\"'); 
             properties = JSON.parse(propertiesString);
         } catch (e) {
             properties = {};
