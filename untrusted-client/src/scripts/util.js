@@ -1,12 +1,4 @@
 
-
-export function getParameterByName(name) {
-    name = name.replace(/[\[]/, "\\\[").replace(/[\]]/, "\\\]");
-    var regex = new RegExp("[\\?&]" + name + "=([^&#]*)"),
-        results = regex.exec(location.search);
-    return results == null ? "" : decodeURIComponent(results[1].replace(/\+/g, " "));
-}
-
 export function unique(arr) {
     let a = arr.concat();
     for (let i = 0; i < a.length; ++i) {
@@ -232,10 +224,6 @@ const moveToward = (obj, type) => {
     }
 }
 
-const LoadingStyle = {
-    margin: 'auto',
-    color: 'yellow'
-}
 
 
 

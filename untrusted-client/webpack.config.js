@@ -1,5 +1,6 @@
 const path = require("path");
 const HtmlWebpackPlugin = require("html-webpack-plugin");
+const CopyWebpackPlugin = require("copy-webpack-plugin");
 const webpack = require("webpack");
 
 module.exports = {
@@ -34,8 +35,11 @@ module.exports = {
       filename: "index.html"
     }),
     new webpack.NamedModulesPlugin(),
-    new webpack.HotModuleReplacementPlugin()
-    
+    new webpack.HotModuleReplacementPlugin(),
+    new CopyWebpackPlugin([
+      // relative path is from src
+      { from: __dirname+"/public/favicon.ico" }, // <- your path to favicon
+    ])
   ],
   devServer: {
     contentBase: "./dist",

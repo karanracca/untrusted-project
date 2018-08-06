@@ -20,16 +20,6 @@ export default class DynamicObject {
         }
     }
 
-    // /* wrapper */
-    // function wrapExposedMethod(f, object) {
-    //     return function () {
-    //         var args = arguments;
-    //         return __game._callUnexposedMethod(function () {
-    //             return f.apply(object, args);
-    //         });
-    //     };
-    // };
-
     _computeDestination (startX, startY, direction) {
         if (this.__game.isPlayerCodeRunning) { throw 'Forbidden method call: object._computeDestination()';}
 

@@ -44,8 +44,6 @@ export default function Player(x, y, __map, __game) {
         __y = dynamicObject.getY();
         __display.drawAll(__map);
 
-        // play teleporter sound
-        //__game.sound.playSound('blip');
     };
 
     this._afterMove = function (x, y) {
@@ -85,9 +83,6 @@ export default function Player(x, y, __map, __game) {
             }
         }
 
-        // check for collision with any lines on the map
-        //__map.testLineCollisions(this);
-
         // check for nonstandard victory condition (e.g. DOM level)
         if (typeof(__game.objective) === 'function' && __game.objective(__map)) {
             __game._moveToNextLevel();
@@ -102,17 +97,8 @@ export default function Player(x, y, __map, __game) {
         __game.addToInventory(itemName);
         __map._removeItemFromMap(__x, __y, itemName);
         __map.refresh();
-        //__game.sound.playSound('pickup');
 
         if (object.onPickUp) {
-            // __game.validateCallback(function () {
-            //     setTimeout(function () {
-            //         object.onPickUp(player);
-            //     }, 100);
-            //     // timeout is so that written text is not immediately overwritten
-            //     // TODO: play around with Display.writeStatus so that this is
-            //     // not necessary
-            // });
             object.onPickUp(player);
         }
     };
@@ -182,14 +168,10 @@ export default function Player(x, y, __map, __game) {
             this._afterMove(__x, __y);
 
             __map._reenableMovementForPlayer(this); // (key delay can vary by map)
-        } else {
-            // play bump sound
-            //__game.sound.playSound('select');
-        }
+        } 
     }, this);
 
     this.killedBy = wrapExposedMethod(function (killer) {
-        //__game.sound.playSound('hurt');
         __game._restartLevel();
 
         __game.displayChapter('You have been killed by \n' + killer + '!', 'death');
@@ -201,9 +183,7 @@ export default function Player(x, y, __map, __game) {
 
     this.removeItem = wrapExposedMethod(function (itemName) {
         var object = __game.objects[itemName];
-
         __game.removeFromInventory(itemName);
-        //__game.sound.playSound('blip');
     }, this);
 
     this.setPhoneCallback = wrapExposedMethod(function(func) {

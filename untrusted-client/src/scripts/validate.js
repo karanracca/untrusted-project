@@ -3,7 +3,7 @@ import * as config from './config';
 import GameMap from './map';
 
 export default function Validate(allCode, playerCode, restartingLevelFromScript, g) {
-    
+
     let game = g;
 
     try {
@@ -31,7 +31,6 @@ export default function Validate(allCode, playerCode, restartingLevelFromScript,
         allCode = allCode.replace(/\\/g, "")
 
         // evaluate the code to get startLevel() and (opt) validateLevel() methods
-        //this._eval(allCode);
         window.eval(allCode);
 
         // start the level on a dummy map to validate
@@ -39,40 +38,10 @@ export default function Validate(allCode, playerCode, restartingLevelFromScript,
         window.startLevel(dummyMap);
         game._setPlayerCodeRunning = false;
 
-        // // re-run to check if the player messed with startLevel
-        // game._startOfStartLevelReached = false;
-        // game._endOfStartLevelReached = false;
-        // dummyMap.reset();
-        // startLevel(dummyMap);
-
-        // // does startLevel() execute fully?
-        // //(if we're restarting a level after editing a script, we can't test for this - nor do we care)
-        // if (!game._startOfStartLevelReached && !restartingLevelFromScript) {
-        //      throw 'startLevel() has been tampered with!';
-        // }
-        // if (!this._endOfStartLevelReached && !restartingLevelFromScript) {
-        //     throw 'startLevel() returned prematurely!';
-        // }
-
-        // // has the player tampered with any functions?
-        // this.detectTampering(dummyMap, dummyMap.getPlayer());
-
-        //this.validateLevel = function () { return true; };
-        // does validateLevel() succeed?
-        if (typeof(window.validateLevel) === "function") {
+        if (typeof (window.validateLevel) === "function") {
             //this.validateLevel = validateLevel;
             window.validateLevel(dummyMap);
         }
-
-        // this.onExit = function () { return true; };
-        // if (typeof onExit === "function") {
-        //     this.onExit = onExit;
-        // }
-
-        // this.objective = function () { return false; };
-        // if (typeof objective === "function") {
-        //     this.objective = objective;
-        // }
 
         return window.startLevel;
     } catch (e) {

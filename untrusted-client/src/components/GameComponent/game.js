@@ -1,7 +1,6 @@
 import React, { Component } from "react";
 import ROT from '../../scripts/rot';
 import GameScript from '../../scripts/game';
-import * as util from '../../scripts/util'
 import './game.css';
 import 'codemirror/theme/vibrant-ink.css';
 import 'codemirror/lib/codemirror.css';
@@ -47,25 +46,74 @@ class Game extends Component {
         });
     }
 
+    fetchUserData() {
+        let options = { headers: { 'Authorization': config.getAuthToken() } }
+        this.setState({ laoding: true }, () => {
+            axios.get(config.API.updateLevel, options).then(response => {
+                localStorage.setItem('token', response.data.token);
+                localStorage.setItem('currentPlayer', JSON.stringify(response.data.user));
+                this.setState({ user: JSON.parse(localStorage.getItem('currentPlayer')), laoding: false })
+            }).catch(error => {
+                this.setState({ loading: false });
+                console.log(error);
+            })
+        })
+    }
+
+    startNewGame() {
+        let startLevel = this.state.user.level.levelNo;
+        if (startLevel > 1) this.setState({ showEditor: true });
+        let game = new GameScript(startLevel, "screen", this);
+
+        this.setState({ game }, () => {
+            this.state.game.initialize();
+            // contentEditable is required for canvas elements to detect keyboard events
+            this.state.game.display.getContainer().setAttribute("contentEditable", "true");
+            //clear all child of node
+            let node = document.getElementById("screen");
+            while (node.firstChild) node.removeChild(node.firstChild);
+
+            node = document.getElementById("editor");
+            while (node.firstChild) node.removeChild(node.firstChild);
+            document.getElementById("screen").appendChild(this.state.game.display.getContainer());
+        });
+    }
+
     levelComplete(currentLevel) {
         if (currentLevel < 10) {
-            let options = { headers: { 'Authorization': config.getAuthToken()}}
-            this.setState({laoding: true}, ()=> {
+            let options = { headers: { 'Authorization': config.getAuthToken() } }
+            this.setState({ laoding: true }, () => {
                 axios.get(config.API.updateLevel, options).then(response => {
                     localStorage.setItem('token', response.data.token);
                     localStorage.setItem('currentPlayer', JSON.stringify(response.data.user));
-                    this.setState({user: JSON.parse(localStorage.getItem('currentPlayer')), laoding: false })
+                    this.setState({ user: JSON.parse(localStorage.getItem('currentPlayer')), laoding: false })
                     this.state.game.getLevel(response.data.user.level.levelNo, false, true);
                     console.log(`Level ${currentLevel} complete, moving to ${response.data.user.level.levelNo + 1} level`);
                 }).catch(error => {
-                    this.setState({loading: false});
+                    this.setState({ loading: false });
                     console.log(error);
                 })
             })
-            
+
         } else if (currentLevel === 10) {
             this.props.history.push('/winner');
         }
+    }
+
+    resetGame() {
+        let options = { headers: { 'Authorization': config.getAuthToken() } }
+        this.setState({ laoding: true }, () => {
+            axios.get(config.API.reset, options).then(response => {
+                // this.fetchUserData();
+                // this.startNewGame();
+                // this.setState({ loading: false });
+                // console.log(response)
+                this.props.history.push("/login");
+            }).catch(error => {
+                this.setState({ loading: false });
+                console.log(error);
+            })
+        });
     }
 
     drawInventory() {
@@ -103,7 +151,9 @@ class Game extends Component {
     }
 
     showEditor() {
-        this.setState({ showEditor: true });
+        this.setState({ showEditor: true }, () => {
+            this.state.game.editor.refresh()
+        });
     }
 
     showPhone() {
@@ -132,78 +182,81 @@ class Game extends Component {
 
         const { showEditor, inventory, showPhone, loading } = this.state;
         if (!loading) {
-        return (<div>
-            {this.state.user !== null ?
-                <div className="welcome-user">
-                    <span>Hi, {this.state.user.fullname}</span>
+            return (<div>
+                {this.state.user !== null ?
+                    <div className="welcome-user">
+                        <span>Hi, {this.state.user.fullname}</span>
+                    </div> : null}
+
+
+                <div className="main-title">
+                    <span>The Advantures of Dr. Eval</span>
+                </div>
+
+                {this.state.user !== null ? <div>
+                    <span className="user-level">Level-{this.state.user.level.levelNo}</span>
+                    <span className="user-score">Score-{this.state.user.score}</span>
                 </div> : null}
-
-
-            <div className="main-title">
-                <span>The Advantures of Dr. Eval</span>
-            </div>
-            {this.state.user !== null ? <div>
-                <span className="user-level">Level-{this.state.user.level.levelNo}</span>
-                <span className="user-score">Score-{this.state.user.score}</span>
-            </div> : null}
-            <div id="container">
-                <div id="panes">
-                    <div id="screenPane">
-                        <div id="dummyDom"></div>
-                        <div id="screen"></div>
-                        <div id="inventory">
-                            INVENTORY {inventory.map((item, i) => appendInventory(item, i))}
-                        </div>
-                        <div id="output"></div>
-                        {this.state.showChapter ?
-                            <div id="chapter">
-                                {this.state.chapter}
-                            </div> : null
-                        }
-                    </div>
-                    <div id="editorPane" style={{ display: showEditor ? 'block' : 'none' }}>
-                        <textarea id="editor"></textarea>
-                        <div id="buttons">
-                            <span className="editor-btn" onClick={() => this.onExecute()}>
-                                <a id="executeButton" title="Ctrl+5: Execute">
-                                    <span className="keys">^5</span> Execute
-                                </a>
-                            </span>
-                            <span className="editor-btn" onClick={() => this.onReset()}>
-                                <a id="resetButton" title="Ctrl+4: Reset Level">
-                                    <span className="keys">^4</span> Reset
-                                </a>
-                            </span>
-                            <span className="editor-btn" onClick={() => this.openHelp()}>
-                                <a id="helpButton" title="Ctrl+1: API Reference">
-                                    <span className="keys">^1</span> API
-                                </a>
-                            </span>
-
-                            <span className="editor-btn" onClick={() => this.openLeaderboard()}>
-                                <a id="helpButton" title="Ctrl+1: API Reference">
-                                    <span className="keys">^2</span> Leaderboard
-                                </a>
-                            </span>
-                            {showPhone ? <span className="editor-btn" onClick={() => this.usePhone()}>
-                                <a id="phoneButton" title="Q: Use Phone">
-                                    <span className="keys"> Q</span>Phone
-                                </a>
-                            </span> : null
+                <div id="container">
+                    <div id="panes">
+                        <div id="screenPane">
+                            <div id="dummyDom"></div>
+                            <div id="screen"></div>
+                            <div id="inventory">
+                                INVENTORY {inventory.map((item, i) => appendInventory(item, i))}
+                            </div>
+                            <div id="output"></div>
+                            {this.state.showChapter ?
+                                <div id="chapter">
+                                    {this.state.chapter}
+                                </div> : null
                             }
                         </div>
-                    </div>
-                    {this.state.showHelp && this.state.game.helpCommands ? <HelpPane help={this.state.game.helpCommands} close={this.closeHelp.bind(this)}></HelpPane> : null}
+                        <div id="editorPane" style={{ display: showEditor ? 'block' : 'none' }}>
+                            <textarea id="editor"></textarea>
+                            <div id="buttons">
+                                <span className="editor-btn" onClick={() => this.onExecute()}>
+                                    <a id="executeButton" title="Ctrl+5: Execute">
+                                        <span className="keys">^5</span> Execute
+                                </a>
+                                </span>
+                                <span className="editor-btn" onClick={() => this.onReset()}>
+                                    <a id="resetButton" title="Ctrl+4: Reset Level">
+                                        <span className="keys">^4</span> Reset
+                                </a>
+                                </span>
+                                <span className="editor-btn" onClick={() => this.openHelp()}>
+                                    <a id="helpButton" title="Ctrl+1: API Reference">
+                                        <span className="keys">^1</span> API
+                                </a>
+                                </span>
 
-                    {this.state.showLeaderboard ? <Leaderboard close={this.closeLeaderboard.bind(this)}></Leaderboard> : null}
+                                <span className="editor-btn" onClick={() => this.openLeaderboard()}>
+                                    <a id="helpButton" title="Ctrl+1: API Reference">
+                                        <span className="keys">^2</span> Leaderboard
+                                </a>
+                                </span>
+                                {showPhone ? <span className="editor-btn" onClick={() => this.usePhone()}>
+                                    <a id="phoneButton" title="Q: Use Phone">
+                                        <span className="keys"> Q</span>Phone
+                                </a>
+                                </span> : null
+                                }
+                            </div>
+                        </div>
+                        {this.state.showHelp && this.state.game.helpCommands ? <HelpPane help={this.state.game.helpCommands} close={this.closeHelp.bind(this)}></HelpPane> : null}
+
+                        {this.state.showLeaderboard ? <Leaderboard close={this.closeLeaderboard.bind(this)}></Leaderboard> : null}
+                    </div>
                 </div>
-            </div>
-            <span onClick={() => { this.logout() }} className="logout-btn"><a>Logout</a></span>
-        </div>);
-    } else {
-        return(<Loading />)
+                <span onClick={() => { this.logout() }} className="logout-btn"><a>Logout</a></span>
+
+                <span onClick={() => { this.resetGame() }} className="reset-btn"><a>Reset Game</a></span>
+            </div>);
+        } else {
+            return (<Loading />)
+        }
     }
-}
 }
 
 export default Game;
