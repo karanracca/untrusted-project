@@ -370,6 +370,7 @@ export default class Game {
         if (this.inventory.indexOf(itemName) === -1) {
             let object = this.map.getObjectDefinition(itemName);
             this.inventory.push(object);
+            if (itemName === 'phone') this.app.showPhone();
             this.app.drawInventory();
         }
     };
@@ -575,6 +576,13 @@ export default class Game {
 
     checkInventory (itemName) {
         return this.inventory.indexOf(itemName) > -1;
+    };
+
+    getItemDefinition (itemName) {
+        let map = this.map;
+        return this.callUnexposedMethod(function () {
+            return map.getObjectDefinition(itemName);
+        });
     };
 
 

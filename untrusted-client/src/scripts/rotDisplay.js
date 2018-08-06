@@ -19,7 +19,7 @@ export default class GameDisplay extends ROT.Display {
     // according to name (NOT according to the actual object literal!)
     drawObject(map, x, y, object) {
         let type = object.type;
-        let definition = map.getObjectDefinition(type) || this.savedDefinitions[type];
+        let definition = this.game.getItemDefinition(type) || this.savedDefinitions[type]; // change map.getObjectDefination
         let symbol = definition.symbol;
         let color = object.color || definition.color || "#fff";
         let bgColor = object.bgColor || "#000";

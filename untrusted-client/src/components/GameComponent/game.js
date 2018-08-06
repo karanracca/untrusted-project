@@ -1,6 +1,6 @@
 import React, { Component } from "react";
 import ROT from '../../scripts/rot';
-import Game from '../../scripts/game';
+import GameScript from '../../scripts/game';
 import * as util from '../../scripts/util'
 import './game.css';
 import 'codemirror/theme/vibrant-ink.css';
@@ -8,16 +8,16 @@ import 'codemirror/lib/codemirror.css';
 import HelpPane from '../HelpComponent/helpPane';
 import axios from 'axios';
 import Leaderboard from "../LeaderboardComponent/leaderboard";
-import * as config  from '../../scripts/config';
-import Sound from "../../scripts/sound";
+import * as config from '../../scripts/config';
+import Loading from '../LoadingComponent/loading'
 
 const appendInventory = (inventory, i) => {
-    return(<span key={i} className="item" style={{color: inventory.color ? inventory.color : '#fff'}}>
+    return (<span key={i} className="item" style={{ color: inventory.color ? inventory.color : '#fff' }}>
         {inventory.symbol}
     </span>)
 }
 
-class App extends Component {
+class Game extends Component {
 
     constructor(props) {
         super(props);
@@ -30,15 +30,15 @@ class App extends Component {
             showEditor: false,
             showPhone: false,
             user: localStorage.getItem('currentPlayer') ? JSON.parse(localStorage.getItem('currentPlayer')) : props.history.push('/login'),
-            sound: new Sound('local')
+            laoding: false
         }
     }
 
     componentDidMount() {
         window.ROT = ROT;
         let startLevel = this.state.user.level.levelNo;
-        if (startLevel>1) this.setState({showEditor: true});
-        let game = new Game(startLevel, "screen", this);
+        if (startLevel > 1) this.setState({ showEditor: true });
+        let game = new GameScript(startLevel, "screen", this);
         this.setState({ game }, () => {
             this.state.game.initialize();
             // contentEditable is required for canvas elements to detect keyboard events
@@ -48,23 +48,27 @@ class App extends Component {
     }
 
     levelComplete(currentLevel) {
-        let options = {headers:{'Authorization': config.getAuthToken()}}
-        axios.get(config.API.updateLevel, options).then(response => {
-            localStorage.setItem('token', response.data.token);
-            localStorage.setItem('currentPlayer', JSON.stringify(response.data.user));
-            this.setState({user: JSON.parse(localStorage.getItem('currentPlayer'))})
-                
-            this.state.game.getLevel(response.data.user.level.levelNo, false, true);
-            console.log(`Level ${currentLevel} complete, moving to ${response.data.user.level.levelNo + 1} level`);
-        }).catch(error => {
-            console.log(error);
-        })
+        if (currentLevel < 10) {
+            let options = { headers: { 'Authorization': config.getAuthToken()}}
+            this.setState({laoding: true}, ()=> {
+                axios.get(config.API.updateLevel, options).then(response => {
+                    localStorage.setItem('token', response.data.token);
+                    localStorage.setItem('currentPlayer', JSON.stringify(response.data.user));
+                    this.setState({user: JSON.parse(localStorage.getItem('currentPlayer')), laoding: false })
+                    this.state.game.getLevel(response.data.user.level.levelNo, false, true);
+                    console.log(`Level ${currentLevel} complete, moving to ${response.data.user.level.levelNo + 1} level`);
+                }).catch(error => {
+                    this.setState({loading: false});
+                    console.log(error);
+                })
+            })
+            
+        } else if (currentLevel === 10) {
+            this.props.history.push('/winner');
+        }
     }
 
     drawInventory() {
-        //let inv = this.state.inventory.slice(0);
-        //item = this.state.game.map.getObjectDefinition(item);
-        //inv.push(item);
         let inv = this.state.game.inventory;
         this.setState({ inventory: inv });
     }
@@ -99,11 +103,11 @@ class App extends Component {
     }
 
     showEditor() {
-        this.setState({showEditor: true});
+        this.setState({ showEditor: true });
     }
 
     showPhone() {
-        this.setState({showPhone: true});
+        this.setState({ showPhone: true });
     }
 
     usePhone() {
@@ -114,7 +118,7 @@ class App extends Component {
         this.setState({
             chapter: message,
             showChapter: true
-        }, ()=> {
+        }, () => {
             setTimeout(function (that) {
                 that.setState({
                     chapter: '',
@@ -126,8 +130,8 @@ class App extends Component {
 
     render() {
 
-        const {showEditor, inventory, showPhone} = this.state;
-
+        const { showEditor, inventory, showPhone, loading } = this.state;
+        if (!loading) {
         return (<div>
             {this.state.user !== null ?
                 <div className="welcome-user">
@@ -141,23 +145,23 @@ class App extends Component {
             {this.state.user !== null ? <div>
                 <span className="user-level">Level-{this.state.user.level.levelNo}</span>
                 <span className="user-score">Score-{this.state.user.score}</span>
-            </div>: null}
+            </div> : null}
             <div id="container">
                 <div id="panes">
                     <div id="screenPane">
                         <div id="dummyDom"></div>
                         <div id="screen"></div>
                         <div id="inventory">
-                        INVENTORY {inventory.map((item, i) => appendInventory(item, i))}
+                            INVENTORY {inventory.map((item, i) => appendInventory(item, i))}
                         </div>
                         <div id="output"></div>
-                        {this.state.showChapter?
-                        <div id="chapter">
-                            {this.state.chapter}
-                        </div>:null
+                        {this.state.showChapter ?
+                            <div id="chapter">
+                                {this.state.chapter}
+                            </div> : null
                         }
                     </div>
-                    <div id="editorPane" style={{display: showEditor? 'block': 'none'}}>
+                    <div id="editorPane" style={{ display: showEditor ? 'block' : 'none' }}>
                         <textarea id="editor"></textarea>
                         <div id="buttons">
                             <span className="editor-btn" onClick={() => this.onExecute()}>
@@ -181,7 +185,7 @@ class App extends Component {
                                     <span className="keys">^2</span> Leaderboard
                                 </a>
                             </span>
-                            {showPhone? <span className="editor-btn" onClick={() => this.usePhone()}>
+                            {showPhone ? <span className="editor-btn" onClick={() => this.usePhone()}>
                                 <a id="phoneButton" title="Q: Use Phone">
                                     <span className="keys"> Q</span>Phone
                                 </a>
@@ -196,7 +200,10 @@ class App extends Component {
             </div>
             <span onClick={() => { this.logout() }} className="logout-btn"><a>Logout</a></span>
         </div>);
+    } else {
+        return(<Loading />)
     }
 }
+}
 
-export default App;
+export default Game;

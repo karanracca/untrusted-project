@@ -38,9 +38,9 @@ export default class Map {
     get height() { return this.game.dimensions.height; };
 
     getObjectDefinition(objName) {
-        if (this.game.isPlayerCodeRunning) { throw 'Forbidden method call: map._getObjectDefinition()'; }
+        if (this.game.isPlayerCodeRunning) { throw 'Forbidden method call: map.getObjectDefinition()'; }
         return this.objectDefinitions[objName];
-    };
+    }
 
     getObjectDefinitions() {
         if (this.game.isPlayerCodeRunning) { throw 'Forbidden method call: map._getObjectDefinitions()'; }
@@ -107,15 +107,14 @@ export default class Map {
     };
 
     /* wrapper */
-
-    //     function wrapExposedMethod(f, map) {
-    //         return function () {
-    //             var args = arguments;
-    //             return __game._callUnexposedMethod(function () {
-    //                 return f.apply(map, args);
-    //             });
-    //         };
-    //     };
+    wrapExposedMethod(f, map) {
+        return function () {
+            var args = arguments;
+            return this.game.callUnexposedMethod(function () {
+                return f.apply(map, args);
+            });
+        };
+    };
 
     //     /* unexposed getters */
 

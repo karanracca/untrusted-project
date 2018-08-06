@@ -3,7 +3,7 @@ import { BrowserRouter as Router, Route, Link } from "react-router-dom";
 import './register.css';
 import axios from 'axios';
 import { API } from '../../scripts/config';
-
+import Loading from '../LoadingComponent/loading';
 
 export default class Register extends Component {
 
@@ -15,7 +15,8 @@ export default class Register extends Component {
             confirmPassword: '',
             fullname: '',
             showError: false,
-            error: ''
+            error: '',
+            loading: false
         }
         this.handleChange = this.handleChange.bind(this);
         this.handleSubmit = this.handleSubmit.bind(this);
@@ -30,11 +31,13 @@ export default class Register extends Component {
         if (this.state.username === "" || this.state.password === "" || this.state.fullname === "") {
             return;
         }
+        this.setState({loading: true});
         axios.post(API.register, {
             username: this.state.username,
             password: this.state.password,
             fullname: this.state.fullname,
         }).then(response => {
+            this.setState({loading: false});
             if (response.status === 200) {
                 this.setState({showError: false});
                 this.props.history.push(`/login`);
@@ -42,6 +45,7 @@ export default class Register extends Component {
                 throw response;
             }
         }).catch(error => {
+            this.setState({loading: false});
             console.log(error);
             this.setState({showError: true, error: error.response && error.response.data || "Something went wrong, please try again" })  
         })
@@ -49,8 +53,8 @@ export default class Register extends Component {
 
     render() {
 
-        const { error, showError } = this.state;
-
+        const { error, showError , loading} = this.state;
+        if (!loading) {
         return (
             <div id="notepadPane" className='pop-up-box'>
                 <div className="popup-box-heading">$CREATE ACCOUNT</div>
@@ -80,5 +84,8 @@ export default class Register extends Component {
                 </form>
             </div>
         )
+    } else {
+        return(<Loading />)
+    }
     }
 }

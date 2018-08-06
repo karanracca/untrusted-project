@@ -65,7 +65,7 @@ export default class DynamicObject {
                         me.move(player.getLastMoveDirection());
                     }
                     if (this.__definition.onCollision) {
-                        map._validateCallback(function () {
+                        this._map._validateCallback(function () {
                             this.__definition.onCollision(player, me);
                         });
                     }
@@ -78,7 +78,7 @@ export default class DynamicObject {
                 }
             } catch (e) {
                 // throw e; // for debugging
-                map.writeStatus(e.toString());
+                this._map.writeStatus(e.toString());
             }
         }
 

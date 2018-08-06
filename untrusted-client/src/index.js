@@ -7,6 +7,4 @@ ReactDOM.render(<App />, document.getElementById("root"));
 
 //TODO
 
-//AMEY - 1. Scoring 
-
 //2. Code hidden unless clicked on editor
