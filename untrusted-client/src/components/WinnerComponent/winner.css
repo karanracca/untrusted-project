@@ -1,0 +1,53 @@
+.pop-up-box {
+    position: inherit;
+    margin: auto;
+    margin-top: 5%;
+    height: 300px;
+    width: 500px;
+    top: 60px;
+    left: 350px;
+    z-index: 9000;
+    background: black;
+    border: 2px solid yellow;
+    padding: 2%;
+    text-align: center;
+}
+
+.popup-box-button {
+    background-color: black;
+    border: 2px solid white;
+    color: white;
+    width: 205px;
+    padding: 4px;
+    margin: 5px;
+    cursor: pointer;
+    font-size: 0.8rem;
+}
+
+.pop_up_box button:hover {
+    background-color: white;
+    color: black;
+}
+
+.popup-box-heading {
+    margin: 10px;
+    color: yellow;
+    font-size: 1.5em;
+    font-weight: bold;
+}
+
+.pop_up_box button.disabled {
+    background-color: #555;
+    border-color: #ccc;
+    color: #ccc;
+    cursor: auto;
+}
+
+.pop_up_box button.disabled:hover {
+    background-color: #555;
+    color: #ccc;
+}
+
+.error {
+    color: red;
+}

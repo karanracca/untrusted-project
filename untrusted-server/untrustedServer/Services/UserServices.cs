@@ -68,9 +68,9 @@ namespace untrustedServer.Services
         public User UpdateStats(User user)
         {
             var filter = Builders<User>.Filter.Eq("username", user.username);
+            int updatedScore = user.score + (10 * user.level.levelNo);
             int newLevelNo = user.level.levelNo + 1;
             Level updatedLevel = ls.getlevel(newLevelNo);   
-            int updatedScore = user.score + (10 * newLevelNo);
             var update = Builders<User>.Update.Set("level", updatedLevel).Set("score", updatedScore);
             UpdateResult updateResult = userCollection.UpdateOne(filter, update);
             if (updateResult.IsAcknowledged)

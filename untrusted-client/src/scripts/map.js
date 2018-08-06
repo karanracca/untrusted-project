@@ -38,9 +38,9 @@ export default class Map {
     get height() { return this.game.dimensions.height; };
 
     getObjectDefinition(objName) {
-        if (this.game.isPlayerCodeRunning) { throw 'Forbidden method call: map._getObjectDefinition()'; }
+        if (this.game.isPlayerCodeRunning) { throw 'Forbidden method call: map.getObjectDefinition()'; }
         return this.objectDefinitions[objName];
-    };
+    }
 
     getObjectDefinitions() {
         if (this.game.isPlayerCodeRunning) { throw 'Forbidden method call: map._getObjectDefinitions()'; }
@@ -107,15 +107,14 @@ export default class Map {
     };
 
     /* wrapper */
-
-    //     function wrapExposedMethod(f, map) {
-    //         return function () {
-    //             var args = arguments;
-    //             return __game._callUnexposedMethod(function () {
-    //                 return f.apply(map, args);
-    //             });
-    //         };
-    //     };
+    wrapExposedMethod(f, map) {
+        return function () {
+            var args = arguments;
+            return this.game.callUnexposedMethod(function () {
+                return f.apply(map, args);
+            });
+        };
+    };
 
     //     /* unexposed getters */
 
@@ -180,7 +179,7 @@ export default class Map {
             } else if (typeof object.impassable === 'function') {
                 // the obstacle is impassable only in certain circumstances
                 try {
-                    return this._validateCallback(function () {
+                    return this._validateCallback(() => {
                         return !object.impassable(this.player, object);
                     });
                 } catch (e) {
@@ -199,64 +198,65 @@ export default class Map {
         }
     };
 
-    //     // Returns the object of the given type closest to target coordinates
-    //     this._findNearestToPoint = function (type, targetX, targetY) {
-    //         if (__game._isPlayerCodeRunning()) { throw 'Forbidden method call: map._findNearestToPoint()';}
+    // Returns the object of the given type closest to target coordinates
+    _findNearestToPoint(type, targetX, targetY) {
+        if (this.game.isPlayerCodeRunning) { throw 'Forbidden method call: map._findNearestToPoint()'; }
 
-    //         var foundObjects = [];
+        let foundObjects = [];
 
-    //         // look for static objects
-    //         for (var x = 0; x < this.getWidth(); x++) {
-    //             for (var y = 0; y < this.getHeight(); y++) {
-    //                 if (__grid[x][y].type === type) {
-    //                     foundObjects.push({x: x, y: y});
-    //                 }
-    //             }
-    //         }
+        // look for static objects
+        for (let x = 0; x < this.width; x++) {
+            for (let y = 0; y < this.height; y++) {
+                if (this._grid[x][y].type === type) {
+                    foundObjects.push({ x: x, y: y });
+                }
+            }
+        }
 
-    //         // look for dynamic objects
-    //         for (var i = 0; i < this.getDynamicObjects().length; i++) {
-    //             var object = this.getDynamicObjects()[i];
-    //             if (object.getType() === type) {
-    //                 foundObjects.push({x: object.getX(), y: object.getY()});
-    //             }
-    //         }
+        // look for dynamic objects
+        for (let i = 0; i < this._dynamicObjects.length; i++) {
+            let object = this._dynamicObjects[i];
+            if (object.getType() === type) {
+                foundObjects.push({ x: object.getX(), y: object.getY() });
+            }
+        }
 
-    //         // look for player
-    //         if (type === 'player') {
-    //             foundObjects.push({x: __player.getX(), y: __player.getY()});
-    //         }
+        // look for player
+        if (type === 'player') {
+            foundObjects.push({ x: this.player.getX(), y: this.player.getY() });
+        }
 
-    //         var dists = [];
-    //         for (var i = 0; i < foundObjects.length; i++) {
-    //             var obj = foundObjects[i];
-    //             dists[i] = Math.sqrt(Math.pow(targetX - obj.x, 2) + Math.pow(targetY - obj.y, 2));
+        var dists = [];
+        for (var i = 0; i < foundObjects.length; i++) {
+            var obj = foundObjects[i];
+            dists[i] = Math.sqrt(Math.pow(targetX - obj.x, 2) + Math.pow(targetY - obj.y, 2));
 
-    //             // We want to find objects distinct from ourselves
-    //             if (dists[i] === 0) {
-    //                 dists[i] = 999;
-    //             }
-    //         }
+            // We want to find objects distinct from ourselves
+            if (dists[i] === 0) {
+                dists[i] = 999;
+            }
+        }
 
-    //         var minDist = Math.min.apply(Math, dists);
-    //         var closestTarget = foundObjects[dists.indexOf(minDist)];
+        let minDist = Math.min.apply(Math, dists);
+        let closestTarget = foundObjects[dists.indexOf(minDist)];
 
-    //         return closestTarget;
-    //     };
+        return closestTarget;
+    };
 
-    //     this._isPointOccupiedByDynamicObject = function (x, y) {
-    //         if (__game._isPlayerCodeRunning()) { throw 'Forbidden method call: map._isPointOccupiedByDynamicObject()';}
+    _isPointOccupiedByDynamicObject(x, y) {
+        if (this.game.isPlayerCodeRunning) { throw 'Forbidden method call: map._isPointOccupiedByDynamicObject()'; }
 
-    //         var x = Math.floor(x); var y = Math.floor(y);
+        x = Math.floor(x);
+        y = Math.floor(y);
 
-    //         for (var i = 0; i < this.getDynamicObjects().length; i++) {
-    //             var object = this.getDynamicObjects()[i];
-    //             if (object.getX() === x && object.getY() === y) {
-    //                 return true;
-    //             }
-    //         }
-    //         return false;
-    //     };
+        for (let i = 0; i < this._dynamicObjects.length; i++) {
+            var object = this._dynamicObjects[i];
+            if (object.getX() === x && object.getY() === y) {
+                return true;
+            }
+        }
+        return false;
+    };
 
     //     this._findDynamicObjectAtPoint = function (x, y) {
     //         if (__game._isPlayerCodeRunning()) { throw 'Forbidden method call: map._findDynamicObjectAtPoint()';}
@@ -333,11 +333,11 @@ export default class Map {
         this._status = '';
     };
 
-    //     this._refreshDynamicObjects = function() {
-    //         if (__game._isPlayerCodeRunning()) { throw 'Forbidden method call: map._refreshDynamicObjects()';}
+    _refreshDynamicObjects() {
+        if (this.game.isPlayerCodeRunning) { throw 'Forbidden method call: map._refreshDynamicObjects()'; }
 
-    //         __dynamicObjects = __dynamicObjects.filter(function (obj) { return !obj.isDestroyed(); });
-    //     };
+        this._dynamicObjects = this._dynamicObjects.filter(function (obj) { return !obj.isDestroyed(); });
+    };
 
     //     this._countTimers = function() {
     //         if (__game._isPlayerCodeRunning()) { throw 'Forbidden method call: map._countTimers()';}
@@ -363,7 +363,7 @@ export default class Map {
 
     _validateCallback(callback) {
         if (this.game.isPlayerCodeRunning) { throw 'Forbidden method call: map._validateCallback()'; }
-        return this.game.validateCallback(callback);
+        return this.game.validateCallback(callback, false, true);
     };
 
     //exposed methods

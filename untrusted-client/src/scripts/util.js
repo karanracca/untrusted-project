@@ -1,4 +1,5 @@
 
+
 export function getParameterByName(name) {
     name = name.replace(/[\[]/, "\\\[").replace(/[\]]/, "\\\]");
     var regex = new RegExp("[\\?&]" + name + "=([^&#]*)"),
@@ -6,11 +7,11 @@ export function getParameterByName(name) {
     return results == null ? "" : decodeURIComponent(results[1].replace(/\+/g, " "));
 }
 
-export function unique (arr ) {
+export function unique(arr) {
     let a = arr.concat();
-    for(let i=0; i<a.length; ++i) {
-        for(let j=i+1; j<a.length; ++j) {
-            if(a[i] === a[j])
+    for (let i = 0; i < a.length; ++i) {
+        for (let j = i + 1; j < a.length; ++j) {
+            if (a[i] === a[j])
                 a.splice(j--, 1);
         }
     }
@@ -18,30 +19,30 @@ export function unique (arr ) {
 };
 
 export class DummyDisplay {
-    constructor() {}
-    clear () {};
-    drawAll () {};
-    drawObject () {};
-    drawText () {};
-    writeStatus () {};
+    constructor() { }
+    clear() { };
+    drawAll() { };
+    drawObject() { };
+    drawText() { };
+    writeStatus() { };
 };
 
-export function getListOfObjects (__game) {
+export function getListOfObjects(__game) {
     let game = __game;
     return {
         // special
-        'empty' : {
+        'empty': {
             'symbol': ' ',
             'impassableFor': ['raft']
         },
 
-        'player' : {
+        'player': {
             'symbol': '@',
             'color': '#0f0'
         },
 
-        'exit' : {
-            'symbol' : String.fromCharCode(0x2395), // ⎕
+        'exit': {
+            'symbol': String.fromCharCode(0x2395), // ⎕
             'color': '#0ff',
             'onCollision': function (player) {
                 if (!game.map.finalLevel) {
@@ -83,7 +84,7 @@ export function getListOfObjects (__game) {
 
         'teleporter': {
             'type': 'dynamic',
-            'symbol' : String.fromCharCode(0x2395), // ⎕
+            'symbol': String.fromCharCode(0x2395), // ⎕
             'color': '#f0f',
             'onCollision': function (player, me) {
                 if (!player._hasTeleported) {
@@ -121,10 +122,12 @@ export function getListOfObjects (__game) {
             'symbol': String.fromCharCode(0x260E), // ☎
             'onPickUp': function (player) {
                 game.map.writeStatus('You have picked up the function phone!');
-                $('#phoneButton').show();
+                game.app.showPhone();
+                //$('#phoneButton').show();
+
             },
             'onDrop': function () {
-                $('#phoneButton').hide();
+                //$('#phoneButton').hide();
             }
         },
 
@@ -204,5 +207,36 @@ export function getListOfObjects (__game) {
         }
     };
 };
+
+const moveToward = (obj, type) => {
+    let target = obj.findNearest(type);
+    let leftDist = obj.getX() - target.x;
+    let upDist = obj.getY() - target.y;
+
+    let direction;
+    if (upDist == 0 && leftDist == 0) {
+        return;
+    }
+    if (upDist > 0 && upDist >= leftDist) {
+        direction = 'up';
+    } else if (upDist < 0 && upDist < leftDist) {
+        direction = 'down';
+    } else if (leftDist > 0 && leftDist >= upDist) {
+        direction = 'left';
+    } else {
+        direction = 'right';
+    }
+
+    if (obj.canMove(direction)) {
+        obj.move(direction);
+    }
+}
+
+const LoadingStyle = {
+    margin: 'auto',
+    color: 'yellow'
+}
+
+
 
 
