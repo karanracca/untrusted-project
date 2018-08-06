@@ -20,6 +20,10 @@ export default class Login extends Component {
         this.handleSubmit = this.handleSubmit.bind(this);
     }
 
+    componentDidMount() {
+        if(localStorage.getItem('currentPlayer')?this.props.history.push(`/game`):console.log('Login'));
+    }
+    
     handleChange(event) {
         this.setState({ [event.target.name]: event.target.value })
     }
