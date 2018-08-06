@@ -49,7 +49,7 @@ export default function CodeEditor(textAreaDomID, width, height, game) {
         endOfStartLevel = null;
         startOfStartLevel = null;
         var propertiesString = '';
-        //codeString = codeString.replace(/"/g, '\''); //trying loading data from server
+        codeString = codeString.replace(/"/g, '\''); //trying loading data from server
         var lineArray = codeString.split("\\n");
         var inEditableBlock = false;
         var inPropertiesBlock = false;
