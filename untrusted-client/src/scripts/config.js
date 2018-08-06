@@ -77,7 +77,8 @@ export const verbotenWords = [
 
 //Start- Related to API
 
-const BaseAPI = "http://localhost:63174/api";
+//const BaseAPI = "http://localhost:63174/api";
+const BaseAPI = "https://untrusted-server.azurewebsites.net/api";
 
 export function getAuthToken() {
     return localStorage.getItem('token');

@@ -1,6 +1,7 @@
 untrusted-client/node_modules
 untrusted-client/dist
 untrusted-server/.vs
+untrusted-server/untrustedServer/obj/
 untrusted-server/untrustedServer/obj/Debug/netcoreapp2.0
 untrusted-server/untrustedServer/bin/Debug/netcoreapp2.0
 

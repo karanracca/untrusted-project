@@ -21,7 +21,7 @@ export default class Login extends Component {
     }
 
     componentDidMount() {
-        if(localStorage.getItem('currentPlayer')?this.props.history.push(`/game`):console.log('Login'));
+        //if(localStorage.getItem('currentPlayer')?this.props.history.push(`/game`):console.log('Login'));
     }
     
     handleChange(event) {
