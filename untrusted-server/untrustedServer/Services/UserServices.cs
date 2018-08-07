@@ -93,5 +93,18 @@ namespace untrustedServer.Services
             }
             return null;
         }
+
+        public User updateLevel(User user,int levelNo)
+        {
+            var filter = Builders<User>.Filter.Eq("username", user.username);
+            Level updatedLevel = ls.getlevel(levelNo);
+            var update = Builders<User>.Update.Set("level", updatedLevel);
+            UpdateResult updateResult = userCollection.UpdateOne(filter, update);
+            if (updateResult.IsAcknowledged)
+            {
+                return userCollection.Find(filter).First();
+            }
+            return null;
+        }
     }
 }

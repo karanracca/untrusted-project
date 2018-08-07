@@ -91,6 +91,31 @@ namespace untrustedServer.Controllers
             }
         }
 
+        [HttpGet]
+        [Route("api/[controller]/[action]/{levelNo}")]
+        [ActionName("levelByNo")]
+        public IActionResult getlevelByNo(int levelNo)
+        {
+            if (ts.validateToken(this.Request, out SecurityToken securityToken))
+            {
+                User loggedInUser = ts.getUserFromToken(securityToken);
+                loggedInUser = us.updateLevel(loggedInUser,levelNo);
+                if (loggedInUser == null)
+                {
+                    return NotFound();
+                }
+                string token = ts.createToken(loggedInUser);
+                var level = new { loggedInUser.level.levelNo, loggedInUser.level.levelName, loggedInUser.level.layout };
+                var user = new { loggedInUser.fullname, loggedInUser.score, level };
+                var response = new { token, user };
+                return base.Ok(response);
+            }
+            else
+            {
+                return Unauthorized();
+            }
+        }
+
 
     }
 }

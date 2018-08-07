@@ -104,21 +104,21 @@ class Game extends Component {
 
     openLevelByNo(lvlNo) {
         console.log(lvlNo)
-        // if (lvlNo <= 10) {
-        //     let options = { headers: { 'Authorization': config.getAuthToken() } }
-        //     this.setState({ laoding: true }, () => {
-        //         axios.get(config.API.getLevelByNo, options).then(response => {
-        //             localStorage.setItem('token', response.data.token);
-        //             localStorage.setItem('currentPlayer', JSON.stringify(response.data.user));
-        //             this.setState({ user: JSON.parse(localStorage.getItem('currentPlayer')), laoding: false })
-        //             this.state.game.getLevel(response.data.user.level.levelNo, false, true);
-        //             console.log(`Level ${currentLevel} complete, moving to ${response.data.user.level.levelNo + 1} level`);
-        //         }).catch(error => {
-        //             this.setState({ loading: false });
-        //             console.log(error);
-        //         })
-        //     })
-        // }
+        if (lvlNo <= 10) {
+            let options = { headers: { 'Authorization': config.getAuthToken() } }
+            this.setState({ laoding: true }, () => {
+                axios.get(`${config.API.getLevelByNo}/${lvlNo}`, options).then(response => {
+                    localStorage.setItem('token', response.data.token);
+                    localStorage.setItem('currentPlayer', JSON.stringify(response.data.user));
+                    this.setState({ user: JSON.parse(localStorage.getItem('currentPlayer')), laoding: false })
+                    this.state.game.getLevel(response.data.user.level.levelNo, false, true);
+                    console.log(`Level ${currentLevel} complete, moving to ${response.data.user.level.levelNo + 1} level`);
+                }).catch(error => {
+                    this.setState({ loading: false });
+                    console.log(error);
+                })
+            })
+        }
     }
 
     resetGame() {
