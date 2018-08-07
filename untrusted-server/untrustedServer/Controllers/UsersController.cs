@@ -92,9 +92,9 @@ namespace untrustedServer.Controllers
         }
 
         [HttpGet]
-        [Route("api/[controller]/[action]/{levelNo}")]
+        [Route("api/[controller]/[action]")]
         [ActionName("levelByNo")]
-        public IActionResult getlevelByNo(int levelNo)
+        public IActionResult getlevelByNo([FromQuery]int levelNo)
         {
             if (ts.validateToken(this.Request, out SecurityToken securityToken))
             {

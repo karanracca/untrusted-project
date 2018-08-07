@@ -105,14 +105,19 @@ class Game extends Component {
     openLevelByNo(lvlNo) {
         console.log(lvlNo)
         if (lvlNo <= 10) {
-            let options = { headers: { 'Authorization': config.getAuthToken() } }
+            let options = {
+                headers: { 'Authorization': config.getAuthToken() },
+                params: {
+                    levelNo: lvlNo
+                }
+            }
             this.setState({ laoding: true }, () => {
-                axios.get(`${config.API.getLevelByNo}/${lvlNo}`, options).then(response => {
+                axios.get(config.API.getLevelByNo, options).then(response => {
                     localStorage.setItem('token', response.data.token);
                     localStorage.setItem('currentPlayer', JSON.stringify(response.data.user));
                     this.setState({ user: JSON.parse(localStorage.getItem('currentPlayer')), laoding: false })
                     this.state.game.getLevel(response.data.user.level.levelNo, false, true);
-                    console.log(`Level ${currentLevel} complete, moving to ${response.data.user.level.levelNo + 1} level`);
+                    console.log(`Level ${lvlNo} complete, moving to ${response.data.user.level.levelNo + 1} level`);
                 }).catch(error => {
                     this.setState({ loading: false });
                     console.log(error);
@@ -186,11 +191,11 @@ class Game extends Component {
     }
 
     openMenuPane() {
-        this.setState({showMenuPane: true});
+        this.setState({ showMenuPane: true });
     }
 
     closeMenuPane() {
-        this.setState({showMenuPane: false});
+        this.setState({ showMenuPane: false });
     }
 
     displayChapter(message, cssClass) {
@@ -281,7 +286,7 @@ class Game extends Component {
                         {this.state.showHelp && this.state.game.helpCommands ? <HelpPane help={this.state.game.helpCommands} close={this.closeHelp.bind(this)}></HelpPane> : null}
 
                         {this.state.showLeaderboard ? <Leaderboard close={this.closeLeaderboard.bind(this)}></Leaderboard> : null}
-                        
+
                         {this.state.showMenuPane ? <MenuPane levelReached={this.state.game._currentLevel} levelSelected={this.openLevelByNo.bind(this)} close={this.closeMenuPane.bind(this)}></MenuPane> : null}
                     </div>
                 </div>
