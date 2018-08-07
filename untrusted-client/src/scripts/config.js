@@ -90,7 +90,8 @@ export const API = {
     level: `${BaseAPI}/level`,
     leaderboard: `${BaseAPI}/users/leaderBoard`,
     updateLevel: `${BaseAPI}/level/updateLevel`,
-    reset: `${BaseAPI}/users/resetLevel`
+    reset: `${BaseAPI}/users/resetLevel`,
+    getLevelByNo: `${BaseAPI}/users/levelByNo`
 }
 
 //End- Related to API

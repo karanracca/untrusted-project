@@ -42,8 +42,8 @@ class HelpPane extends Component {
     render() {
         return (
             <div id="helpPane">
-                <div id="helpPaneSidebar">
-                    <div id="helpPaneTitle">API Reference</div>
+                <div className="helpPaneSidebar">
+                    <div className="helpPaneTitle">API Reference</div>
                     <ul>
                         {this.state.categories.map((c, i) => {
                             return <li onClick={()=> this.getCommands(c)} className="category" key={i}>{c}</li>

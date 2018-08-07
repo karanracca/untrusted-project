@@ -1,0 +1,34 @@
+.popup-box {
+	position: absolute;
+	height: 360px;
+	width: 602px;
+	top: 50px;
+	left: 300px;
+	z-index: 9000;
+	background: black;
+	border: 2px solid yellow;
+}
+
+.closeButton {
+    top: 0;
+    right: 0;
+    position: absolute;
+    width: 10px;
+    border-bottom: 2px solid yellow;
+    border-left: 2px solid yellow;
+    padding-left: 3px;
+    padding-right: 1px;
+    padding-bottom: 2px;
+    cursor: pointer;
+}
+
+.popup-box button {
+	background-color: black;
+	border: 2px solid white;
+	color: white;
+	width: 205px;
+	padding: 4px;
+	margin: 5px;
+	cursor: pointer;
+}
+

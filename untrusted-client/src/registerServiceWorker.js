@@ -32,6 +32,9 @@ export default function register () { // Register the service worker
                     console.log('Content is cached for offline use.');
                   }
                 }
+                if (installingWorker.state === 'activate') {
+                  console.log("here");
+                }
               };
             };
           })

@@ -9,6 +9,7 @@ import axios from 'axios';
 import Leaderboard from "../LeaderboardComponent/leaderboard";
 import * as config from '../../scripts/config';
 import Loading from '../LoadingComponent/loading'
+import MenuPane from "../MenuComponent/menuPane";
 
 const appendInventory = (inventory, i) => {
     return (<span key={i} className="item" style={{ color: inventory.color ? inventory.color : '#fff' }}>
@@ -29,7 +30,8 @@ class Game extends Component {
             showEditor: false,
             showPhone: false,
             user: localStorage.getItem('currentPlayer') ? JSON.parse(localStorage.getItem('currentPlayer')) : props.history.push('/login'),
-            laoding: false
+            laoding: false,
+            showMenuPane: false
         }
     }
 
@@ -100,6 +102,25 @@ class Game extends Component {
         }
     }
 
+    openLevelByNo(lvlNo) {
+        console.log(lvlNo)
+        // if (lvlNo <= 10) {
+        //     let options = { headers: { 'Authorization': config.getAuthToken() } }
+        //     this.setState({ laoding: true }, () => {
+        //         axios.get(config.API.getLevelByNo, options).then(response => {
+        //             localStorage.setItem('token', response.data.token);
+        //             localStorage.setItem('currentPlayer', JSON.stringify(response.data.user));
+        //             this.setState({ user: JSON.parse(localStorage.getItem('currentPlayer')), laoding: false })
+        //             this.state.game.getLevel(response.data.user.level.levelNo, false, true);
+        //             console.log(`Level ${currentLevel} complete, moving to ${response.data.user.level.levelNo + 1} level`);
+        //         }).catch(error => {
+        //             this.setState({ loading: false });
+        //             console.log(error);
+        //         })
+        //     })
+        // }
+    }
+
     resetGame() {
         let options = { headers: { 'Authorization': config.getAuthToken() } }
         this.setState({ laoding: true }, () => {
@@ -162,6 +183,14 @@ class Game extends Component {
 
     usePhone() {
         this.state.game.usePhone();
+    }
+
+    openMenuPane() {
+        this.setState({showMenuPane: true});
+    }
+
+    closeMenuPane() {
+        this.setState({showMenuPane: false});
     }
 
     displayChapter(message, cssClass) {
@@ -236,6 +265,11 @@ class Game extends Component {
                                         <span className="keys">^2</span> Leaderboard
                                 </a>
                                 </span>
+                                <span className="editor-btn" onClick={() => this.openMenuPane()}>
+                                    <a id="helpButton" title="Ctrl+0: Menu">
+                                        <span className="keys">^0</span> Menu
+                                </a>
+                                </span>
                                 {showPhone ? <span className="editor-btn" onClick={() => this.usePhone()}>
                                     <a id="phoneButton" title="Q: Use Phone">
                                         <span className="keys"> Q</span>Phone
@@ -247,6 +281,8 @@ class Game extends Component {
                         {this.state.showHelp && this.state.game.helpCommands ? <HelpPane help={this.state.game.helpCommands} close={this.closeHelp.bind(this)}></HelpPane> : null}
 
                         {this.state.showLeaderboard ? <Leaderboard close={this.closeLeaderboard.bind(this)}></Leaderboard> : null}
+                        
+                        {this.state.showMenuPane ? <MenuPane levelReached={this.state.game._currentLevel} levelSelected={this.openLevelByNo.bind(this)} close={this.closeMenuPane.bind(this)}></MenuPane> : null}
                     </div>
                 </div>
                 <span onClick={() => { this.logout() }} className="logout-btn"><a>Logout</a></span>

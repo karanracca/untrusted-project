@@ -1,7 +1,7 @@
 #helpPane {
 	position: absolute;
 	height: 360px;
-	width: 1060px;
+	width: 1000px;
 	top: 50px;
 	left: 50px;
 	z-index: 9000;
@@ -11,7 +11,7 @@
 
 #helpPaneSidebar {
 	float: left;
-	width: 140px;
+	width: 80px;
 	height: 360px;
 	background: rgb(27, 90, 158);
 }
@@ -83,3 +83,22 @@
 	background: yellow;
 	color: black;
 }
+
+.leaderboard-table{
+	font-size: 1rem;
+	text-align: center
+}
+
+.leaderboard-table th{
+	padding: 2% 12%;
+	font-weight: bold;
+}
+
+.leaderboard-table td{
+	padding: 1%;
+}
+
+.leaderboard-table td{
+	padding: 1%;
+}
+

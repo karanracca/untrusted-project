@@ -9,42 +9,42 @@
 	border: 2px solid yellow;
 }
 
-#helpPaneSidebar {
+#helpPane .helpPaneSidebar {
 	float: left;
-	width: 140px;
+	width: 80px;
 	height: 360px;
 	background: rgb(27, 90, 158);
 }
 
-#helpPaneSidebar #helpPaneTitle {
+#helpPane .helpPaneSidebar .helpPaneTitle {
 	margin-top: 15px;
 	text-align: center;
 	color: yellow;
 }
 
-#helpPaneSidebar li {
+#helpPane .helpPaneSidebar li {
 	cursor: pointer;
-	width: 130px;
+	width: 70px;
 	list-style: none;
 	margin-left: -40px;
 	border-top: 1px solid white;
 	padding: 5px;
 }
 
-#helpPaneSidebar li.selected {
+.helpPaneSidebar li.selected {
 	background-color: rgb(22, 62, 105);
 }
 
-#helpPaneSidebar li:hover {
+.helpPaneSidebar li:hover {
 	background: white;
 	color: rgb(27, 90, 158);
 }
 
-#helpPaneSidebar li:last-child {
+.helpPaneSidebar li:last-child {
 	border-bottom: 1px solid white;
 }
 
-#helpPaneContent {
+#helpPane #helpPaneContent {
 	float: left;
 	width: 864px;
 	height: 320px;
@@ -52,23 +52,23 @@
 	overflow-y: auto;
 }
 
-#helpPaneContent .command {
+#helpPane #helpPaneContent .command {
 	margin-bottom: 1em;
 }
 
-#helpPaneContent .commandTitle {
+#helpPane #helpPaneContent .commandTitle {
 	font-size: 1.2em;
 	font-weight: bold;
 	color: yellow;
 	margin-bottom: 4px;
 }
 
-#helpPaneContent .commandDescription a {
+#helpPane #helpPaneContent .commandDescription a {
 	text-decoration: underline;
 	cursor: pointer;
 }
 
-#helpPaneCloseButton {
+#helpPane #helpPaneCloseButton {
 	float: left;
 	width: 10px;
 	border-bottom: 2px solid yellow;
@@ -79,7 +79,7 @@
 	cursor: pointer;
 }
 
-#helpPaneCloseButton:hover {
+#helpPane #helpPaneCloseButton:hover {
 	background: yellow;
 	color: black;
 }
