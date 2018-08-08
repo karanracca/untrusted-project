@@ -201,7 +201,7 @@ export default {
         'description': 'Returns all dynamic objects currently on the map.'
     },
     'map.height': {
-        'name': 'map.getHeight()',
+        'name': 'map.Height',
         'category': 'map',
         'type': 'method',
         'description': 'Returns the height of the map, in cells.'
@@ -225,7 +225,7 @@ export default {
         'description': 'Returns a hexadecimal string representing a random color in between the start and end colors. The start and end colors must be arrays of the form [R, G, B], where R, G, and B are decimal integers.'
     },
     'map.width': {
-        'name': 'map.getWidth()',
+        'name': 'map.Width',
         'category': 'map',
         'type': 'method',
         'description': 'Returns the width of the map, in cells.'
