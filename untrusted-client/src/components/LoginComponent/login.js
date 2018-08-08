@@ -40,6 +40,7 @@ export default class Login extends Component {
             //Store token and user object for further use
             localStorage.setItem('token', response.data.token);
             localStorage.setItem('currentPlayer', JSON.stringify(response.data.user));
+            localStorage.setItem('levelsCompleted', JSON.stringify([]));
             this.props.history.push(`/game`);
         }).catch(error => {
             this.setState({loading: false});
